@@ -1,3 +1,3 @@
 [submodule "phaser"]
-	path = phaser
+	path = src/phaser
 	url = https://github.com/photonstorm/phaser
