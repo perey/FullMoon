@@ -43,11 +43,37 @@
         return Math.floor((max - min + 1) * Math.random()) + min;
     }
 
+    function angleToXPosition(angle) {
+        // Find the visual angle by rotating the position angle.
+        let screen_angle = angle - player.rot;
+
+        // Correct for the cases that give us an angle 360° more or less than
+        // our intended interval.
+        if (angle >= 360 - FOV / 2 && player.rot <= FOV / 2) {
+            screen_angle -= 360;
+        } else if (angle <= FOV / 2 && player.rot >= 360 - FOV / 2) {
+            screen_angle += 360;
+        }
+        // Convert the visual angle to a horizontal position.
+        return WIDTH / FOV * screen_angle + WIDTH / 2.0;
+    }
+
     // Player data.
     var Player = new Phaser.Class({
         initialize: function Player() {
             this.rot = 0.0;
             this.rot_speed = Phaser.Math.GetSpeed(180, 3);
+        },
+
+        turnLeft: function (delta) {
+            this.rot -= this.rot_speed * delta;
+            while (this.rot < 0) {
+                this.rot += 360;
+            }
+        },
+
+        turnRight: function (delta) {
+            this.rot = (this.rot + this.rot_speed * delta) % 360;
         }
     })
 
@@ -64,16 +90,15 @@
                                           MOON_END, image);
             this.setDisplaySize(MOON_RADIUS * 2, MOON_RADIUS * 2);
             this.setVisible(true);
-            this.angle = 0.0;
-            this.speed = speed;
-            this.last_mark = 0.0; //DEBUG
+            this.elevation_angle = 0.0;
+            this.angular_speed = speed;
         },
 
         update: function (delta) {
-            this.angle += this.speed * delta;
+            this.elevation_angle += this.angular_speed * delta;
 
             let direction = 0;
-            let height = this.angle / 90 * MOON_PEAK;
+            let height = this.elevation_angle / 90 * MOON_PEAK;
 
             if (height > MOON_PEAK) {
                 // Come down the other side of the sky.
@@ -81,7 +106,7 @@
                 direction = 180;
                 this.setFlip(true, true);
             }
-            let x = WIDTH / FOV * (direction - player.rot) + WIDTH / 2.0;
+            let x = angleToXPosition(direction);
             let y = MOON_END - height;
             this.setPosition(x, y);
         }
@@ -96,18 +121,17 @@
                                           frame);
             this.r = r;
             this.theta = theta;
-            this.updatePosition();
+            // Set the initial position and the (unchanging) size.
+            this.update();
             this.setScale(TREE_MAX_SCALE / r);
         },
 
-        updatePosition: function () {
-            let x = WIDTH / FOV * (this.theta - player.rot) + WIDTH / 2.0;
+        update: function () {
+            // Convert the visual angle to a horizontal position.
+            let x = angleToXPosition(this.theta);
+            // Centre all scenery on the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
-        },
-
-        update: function() {
-            this.updatePosition();
         }
     });
 
@@ -174,18 +198,13 @@
      *   delta - The time in milliseconds since the last frame
      */
     function update(time, delta) {
+        // Not sure why the moon isn't updating automatically.
         this.moon.update(delta);
 
         if (controls.left.isDown) {
-            player.rot -= player.rot_speed * delta;
-            while (player.rot < 0) {
-                player.rot += 360;
-            }
+            player.turnLeft(delta);
         } else if (controls.right.isDown) {
-            player.rot += player.rot_speed * delta
-            while (player.rot > 360) {
-                player.rot -= 360;
-            };
+            player.turnRight(delta);
         }
     }
 
