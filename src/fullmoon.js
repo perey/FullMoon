@@ -45,35 +45,35 @@
 
     function angleToXPosition(angle) {
         // Find the visual angle by rotating the position angle.
-        let screen_angle = angle - player.rot;
+        let screenAngle = angle - player.rot;
 
         // Correct for the cases that give us an angle 360° more or less than
         // our intended interval.
         if (angle >= 360 - FOV / 2 && player.rot <= FOV / 2) {
-            screen_angle -= 360;
+            screenAngle -= 360;
         } else if (angle <= FOV / 2 && player.rot >= 360 - FOV / 2) {
-            screen_angle += 360;
+            screenAngle += 360;
         }
         // Convert the visual angle to a horizontal position.
-        return WIDTH / FOV * screen_angle + WIDTH / 2.0;
+        return WIDTH / FOV * screenAngle + WIDTH / 2.0;
     }
 
     // Player data.
     var Player = new Phaser.Class({
         initialize: function Player() {
             this.rot = 0.0;
-            this.rot_speed = Phaser.Math.GetSpeed(180, 3);
+            this.rotSpeed = Phaser.Math.GetSpeed(180, 3);
         },
 
         turnLeft: function (delta) {
-            this.rot -= this.rot_speed * delta;
+            this.rot -= this.rotSpeed * delta;
             while (this.rot < 0) {
                 this.rot += 360;
             }
         },
 
         turnRight: function (delta) {
-            this.rot = (this.rot + this.rot_speed * delta) % 360;
+            this.rot = (this.rot + this.rotSpeed * delta) % 360;
         }
     })
 
@@ -90,15 +90,15 @@
                                           MOON_END, image);
             this.setDisplaySize(MOON_RADIUS * 2, MOON_RADIUS * 2);
             this.setVisible(true);
-            this.elevation_angle = 0.0;
-            this.angular_speed = speed;
+            this.elevationAngle = 0.0;
+            this.angularSpeed = speed;
         },
 
         update: function (delta) {
-            this.elevation_angle += this.angular_speed * delta;
+            this.elevationAngle += this.angularSpeed * delta;
 
             let direction = 0;
-            let height = this.elevation_angle / 90 * MOON_PEAK;
+            let height = this.elevationAngle / 90 * MOON_PEAK;
 
             if (height > MOON_PEAK) {
                 // Come down the other side of the sky.
