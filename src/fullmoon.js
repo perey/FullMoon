@@ -32,6 +32,10 @@
     const TREE_HEIGHT = 200;
     const TREE_MAX_SCALE = 1;
 
+    // The size, in pixels, of people.
+    const HUMAN_WIDTH = 75;
+    const HUMAN_HEIGHT = 85;
+
     // The game duration, in minutes.
     const GAME_DUR = 1;
 
@@ -161,6 +165,9 @@
             this.load.spritesheet("trees", "./assets/trees.png",
                                   {frameWidth: TREE_WIDTH,
                                    frameHeight: TREE_HEIGHT});
+            this.load.spritesheet("runner", "./assets/runner.png",
+                                  {frameWidth: HUMAN_WIDTH,
+                                  frameHeight: HUMAN_HEIGHT});
         },
 
         create: function () {
@@ -171,6 +178,14 @@
             controls = this.input.keyboard.createCursorKeys();
 
             this.startGame();
+
+            this.anims.create({
+                key: "runRight",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("runner", {start: 0,
+                                                                   end: 6}),
+                repeat: -1
+            });
         },
 
         update: function (time, delta) {
