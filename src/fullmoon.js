@@ -35,6 +35,16 @@
     // The game duration, in minutes.
     const GAME_DUR = 1;
 
+    // The possible game states.
+    const GAME_STATE = {
+        NOT_STARTED: 1,
+        RUNNING: 2,
+        PAUSED: 3,
+        ENDED: 4
+    };
+
+    var gameState;
+
     // Utility functions.
     function randInt(max, min) {
         if (typeof min === "undefined") {
@@ -188,23 +198,35 @@
         scenery.addMultiple(trees, true);
 
         controls = this.input.keyboard.createCursorKeys();
+
+        gameState = GAME_STATE.RUNNING;
+        this.gameClock = 0.0;
     };
 
     /**
-     * Update the game state.
+     * Update the game.
      *
      * Parameters:
      *   time - The current time, in milliseconds
      *   delta - The time in milliseconds since the last frame
      */
     function update(time, delta) {
-        // Not sure why the moon isn't updating automatically.
-        this.moon.update(delta);
+        if (this.gameClock >= GAME_DUR * 60 * 1000) {
+            // Game over!
+            gameState = GAME_STATE.ENDED;
+        }
 
-        if (controls.left.isDown) {
-            player.turnLeft(delta);
-        } else if (controls.right.isDown) {
-            player.turnRight(delta);
+        if (gameState === GAME_STATE.RUNNING) {
+            this.gameClock += delta;
+
+            // Not sure why the moon isn't updating automatically.
+            this.moon.update(delta);
+
+            if (controls.left.isDown) {
+                player.turnLeft(delta);
+            } else if (controls.right.isDown) {
+                player.turnRight(delta);
+            }
         }
     }
 
