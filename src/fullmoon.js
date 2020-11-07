@@ -104,7 +104,7 @@
             this.angularSpeed = speed;
         },
 
-        update: function (delta) {
+        update: function (time, delta) {
             this.elevationAngle += this.angularSpeed * delta;
 
             let direction = 0;
@@ -148,84 +148,72 @@
     // The game controls.
     var controls;
 
-    // Phaser Scene functions.
+    // Create a Phaser Scene.
+    var FullMoonScene = new Phaser.Class({
+        Extends: Phaser.Scene,
 
-    /**
-     * Preload the game assets.
-     */
-    function preload() {
-        this.load.image("background", "./assets/night-sky.png");
-        this.load.image("ground", "./assets/ground.png");
-        this.load.image("moon", "./assets/moon.png");
-        this.load.spritesheet("trees", "./assets/trees.png",
-                              {frameWidth: TREE_WIDTH,
-                               frameHeight: TREE_HEIGHT});
-    }
+        preload: function () {
+            this.load.image("background", "./assets/night-sky.png");
+            this.load.image("ground", "./assets/ground.png");
+            this.load.image("moon", "./assets/moon.png");
+            this.load.spritesheet("trees", "./assets/trees.png",
+                                  {frameWidth: TREE_WIDTH,
+                                   frameHeight: TREE_HEIGHT});
+        },
 
-    /**
-     * Create the game state after loading is complete.
-     */
-    function create() {
-        let bg = this.add.image(0, 0, "background");
-        bg.setOrigin(0, 0);
-        bg.setDisplaySize(WIDTH, HEIGHT);
+        create: function () {
+                let titleObjects = this.add.group({active: false, runChildUpdate: true});
+                let gameObjects = this.add.group({active: true, runChildUpdate: true});
+                let menuObjects = this.add.group({active: false, runChildUpdate: true});
 
-        this.moon = new Moon(this, "moon",
-                             Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
-        this.add.existing(this.moon);
+                let bg = new Phaser.GameObjects.Image(this, 0, 0, "background");
+                bg.setOrigin(0, 0);
+                bg.setDisplaySize(WIDTH, HEIGHT);
+                gameObjects.add(bg, true);
 
-        let ground = this.add.image(0, HORIZON, "ground");
-        ground.setOrigin(0, 0);
-        ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
+                let moon = new Moon(this, "moon",
+                                    Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
+                gameObjects.add(moon, true);
 
-        let scenery = this.add.group({
-            classType: Scenery,
-            runChildUpdate: true
-        });
-        // Create some random trees.
-        const availableDesigns = this.textures.get("trees").frameTotal - 1;
-        let trees = [];
-        for (let i = 0; i < 30; i++) {
-            let randomDesign = Math.floor(availableDesigns * Math.random());
-            let tree = new Scenery(this, "trees", randomDesign,
-                                   randInt(MAX_DIST, MIN_DIST),
-                                   randInt(360, 0));
-            trees.push(tree);
+                let ground = this.add.image(0, HORIZON, "ground");
+                ground.setOrigin(0, 0);
+                ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
+
+                // Create some random trees.
+                const availableDesigns = this.textures.get("trees").frameTotal - 1;
+                let trees = [];
+                for (let i = 0; i < 30; i++) {
+                    let randomDesign = Math.floor(availableDesigns * Math.random());
+                    let tree = new Scenery(this, "trees", randomDesign,
+                                           randInt(MAX_DIST, MIN_DIST),
+                                           randInt(360, 0));
+                    trees.push(tree);
+                }
+                gameObjects.addMultiple(trees, true);
+
+                controls = this.input.keyboard.createCursorKeys();
+
+                gameState = GAME_STATE.RUNNING;
+                this.gameClock = 0.0;
+        },
+
+        update: function (time, delta) {
+                if (this.gameClock >= GAME_DUR * 60 * 1000) {
+                    // Game over!
+                    gameState = GAME_STATE.ENDED;
+                }
+
+                if (gameState === GAME_STATE.RUNNING) {
+                    this.gameClock += delta;
+
+                    if (controls.left.isDown) {
+                        player.turnLeft(delta);
+                    } else if (controls.right.isDown) {
+                        player.turnRight(delta);
+                    }
+                }
         }
-        scenery.addMultiple(trees, true);
-
-        controls = this.input.keyboard.createCursorKeys();
-
-        gameState = GAME_STATE.RUNNING;
-        this.gameClock = 0.0;
-    };
-
-    /**
-     * Update the game.
-     *
-     * Parameters:
-     *   time - The current time, in milliseconds
-     *   delta - The time in milliseconds since the last frame
-     */
-    function update(time, delta) {
-        if (this.gameClock >= GAME_DUR * 60 * 1000) {
-            // Game over!
-            gameState = GAME_STATE.ENDED;
-        }
-
-        if (gameState === GAME_STATE.RUNNING) {
-            this.gameClock += delta;
-
-            // Not sure why the moon isn't updating automatically.
-            this.moon.update(delta);
-
-            if (controls.left.isDown) {
-                player.turnLeft(delta);
-            } else if (controls.right.isDown) {
-                player.turnRight(delta);
-            }
-        }
-    }
+    });
 
     // Finally, create the game itself.
 
@@ -233,11 +221,7 @@
         type: Phaser.AUTO,
         width: WIDTH,
         height: HEIGHT,
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
-        }
+        scene: new FullMoonScene()
     };
 
     var game = new Phaser.Game(config);
