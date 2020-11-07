@@ -145,9 +145,6 @@
         }
     });
 
-    // A collection of Scenery instances.
-    var scenery;
-
     // The game controls.
     var controls;
 
@@ -181,7 +178,7 @@
         ground.setOrigin(0, 0);
         ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
 
-        scenery = this.add.group({
+        let scenery = this.add.group({
             classType: Scenery,
             runChildUpdate: true
         });
