@@ -153,6 +153,8 @@
         Extends: Phaser.Scene,
 
         preload: function () {
+            gameState = GAME_STATE.NOT_STARTED;
+
             this.load.image("background", "./assets/night-sky.png");
             this.load.image("ground", "./assets/ground.png");
             this.load.image("moon", "./assets/moon.png");
@@ -162,56 +164,67 @@
         },
 
         create: function () {
-                let titleObjects = this.add.group({active: false, runChildUpdate: true});
-                let gameObjects = this.add.group({active: true, runChildUpdate: true});
-                let menuObjects = this.add.group({active: false, runChildUpdate: true});
+            let titleObjects = this.add.group({active: false, runChildUpdate: true});
+            this.createGameObjects();
+            let menuObjects = this.add.group({active: false, runChildUpdate: true});
 
-                let bg = new Phaser.GameObjects.Image(this, 0, 0, "background");
-                bg.setOrigin(0, 0);
-                bg.setDisplaySize(WIDTH, HEIGHT);
-                gameObjects.add(bg, true);
+            controls = this.input.keyboard.createCursorKeys();
 
-                let moon = new Moon(this, "moon",
-                                    Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
-                gameObjects.add(moon, true);
-
-                let ground = this.add.image(0, HORIZON, "ground");
-                ground.setOrigin(0, 0);
-                ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
-
-                // Create some random trees.
-                const availableDesigns = this.textures.get("trees").frameTotal - 1;
-                let trees = [];
-                for (let i = 0; i < 30; i++) {
-                    let randomDesign = Math.floor(availableDesigns * Math.random());
-                    let tree = new Scenery(this, "trees", randomDesign,
-                                           randInt(MAX_DIST, MIN_DIST),
-                                           randInt(360, 0));
-                    trees.push(tree);
-                }
-                gameObjects.addMultiple(trees, true);
-
-                controls = this.input.keyboard.createCursorKeys();
-
-                gameState = GAME_STATE.RUNNING;
-                this.gameClock = 0.0;
+            this.startGame();
         },
 
         update: function (time, delta) {
-                if (this.gameClock >= GAME_DUR * 60 * 1000) {
-                    // Game over!
-                    gameState = GAME_STATE.ENDED;
-                }
+            if (this.gameClock >= GAME_DUR * 60 * 1000) {
+                // Game over!
+                gameState = GAME_STATE.ENDED;
+            }
 
-                if (gameState === GAME_STATE.RUNNING) {
-                    this.gameClock += delta;
+            if (gameState === GAME_STATE.RUNNING) {
+                this.gameClock += delta;
 
-                    if (controls.left.isDown) {
-                        player.turnLeft(delta);
-                    } else if (controls.right.isDown) {
-                        player.turnRight(delta);
-                    }
+                if (controls.left.isDown) {
+                    player.turnLeft(delta);
+                } else if (controls.right.isDown) {
+                    player.turnRight(delta);
                 }
+            }
+        },
+
+        createGameObjects: function () {
+            let gameObjects = this.add.group({active: true, runChildUpdate: true});
+
+            let bg = new Phaser.GameObjects.Image(this, 0, 0, "background");
+            bg.setOrigin(0, 0);
+            bg.setDisplaySize(WIDTH, HEIGHT);
+            gameObjects.add(bg, true);
+
+            let moon = new Moon(this, "moon",
+                                Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
+            gameObjects.add(moon, true);
+
+            let ground = this.add.image(0, HORIZON, "ground");
+            ground.setOrigin(0, 0);
+            ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
+
+            // Create some random trees.
+            const availableDesigns = this.textures.get("trees").frameTotal - 1;
+            let trees = [];
+            for (let i = 0; i < 30; i++) {
+                let randomDesign = Math.floor(availableDesigns * Math.random());
+                let tree = new Scenery(this, "trees", randomDesign,
+                                       randInt(MAX_DIST, MIN_DIST),
+                                       randInt(360, 0));
+                trees.push(tree);
+            }
+            gameObjects.addMultiple(trees, true);
+        },
+
+        startGame: function () {
+            if (gameState !== GAME_STATE.NOT_STARTED) {
+                return;
+            }
+            gameState = GAME_STATE.RUNNING;
+            this.gameClock = 0.0;
         }
     });
 
