@@ -183,7 +183,15 @@
                 key: "runRight",
                 frameRate: 16,
                 frames: this.anims.generateFrameNumbers("runner", {start: 0,
-                                                                   end: 6}),
+                                                                   end: 5}),
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: "runLeft",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("runner", {start: 6,
+                                                                   end: 11}),
                 repeat: -1
             });
         },
