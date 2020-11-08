@@ -194,6 +194,14 @@
                                                                    end: 11}),
                 repeat: -1
             });
+
+            this.anims.create({
+                key: "runAt",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("runner", {start: 12,
+                                                                   end: 23}),
+                repeat: -1
+            });
         },
 
         update: function (time, delta) {
