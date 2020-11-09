@@ -23,14 +23,14 @@
     // enough to be well off the screen!
     const MOON_PEAK = HEIGHT + 2 * MOON_RADIUS;
 
-    // The near and far limits on scenery.
+    // The near and far limits on trees.
     const MIN_DIST = 1;
-    const MAX_DIST = 20;
+    const MAX_DIST = 15;
 
     // The size, in pixels, of trees.
     const TREE_WIDTH = 150;
     const TREE_HEIGHT = 200;
-    const TREE_MAX_SCALE = 1;
+    const TREE_MAX_SCALE = 1.25;
 
     // The size, in pixels, of people.
     const HUMAN_WIDTH = 75;
@@ -41,22 +41,14 @@
 
     // The possible game states.
     const GAME_STATE = {
-        NOT_STARTED: 1,
-        RUNNING: 2,
-        PAUSED: 3,
-        ENDED: 4
+        RUNNING: 1,
+        PAUSED: 2,
+        ENDED: 3
     };
 
     var gameState;
 
     // Utility functions.
-    function randInt(max, min) {
-        if (typeof min === "undefined") {
-            min = 1;
-        }
-        return Math.floor((max - min + 1) * Math.random()) + min;
-    }
-
     function angleToXPosition(angle) {
         // Find the visual angle by rotating the position angle.
         let screenAngle = angle - player.rot;
@@ -126,11 +118,11 @@
         }
     });
 
-    // An immobile item of scenery.
-    var Scenery = new Phaser.Class({
+    // An immobile item that blocks shots.
+    var Tree = new Phaser.Class({
         Extends: Phaser.GameObjects.Image,
 
-        initialize: function Scenery(scene, sheet, frame, r, theta) {
+        initialize: function Tree(scene, sheet, frame, r, theta) {
             Phaser.GameObjects.Image.call(this, scene, 0, 0, sheet,
                                           frame);
             this.r = r;
@@ -143,7 +135,7 @@
         update: function () {
             // Convert the visual angle to a horizontal position.
             let x = angleToXPosition(this.theta);
-            // Centre all scenery on the horizon.
+            // Centre all trees on the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
         }
@@ -152,13 +144,20 @@
     // The game controls.
     var controls;
 
-    // Create a Phaser Scene.
-    var FullMoonScene = new Phaser.Class({
+    // Phaser scenes for each part of the game.
+    var PreloaderScene = new Phaser.Class({
         Extends: Phaser.Scene,
 
-        preload: function () {
-            gameState = GAME_STATE.NOT_STARTED;
-
+        initialize: function PreloaderScene() {
+            Phaser.Scene.call(this, {
+                key: "PreloaderScene"
+            });
+        },
+        
+        preload: function() {
+            let loadingText = this.add.text(WIDTH / 2, HEIGHT / 2, "Loading",
+                                            {font: "30px serif",
+                                             fill: "#FFFFFF"});
             this.load.image("background", "./assets/night-sky.png");
             this.load.image("ground", "./assets/ground.png");
             this.load.image("moon", "./assets/moon.png");
@@ -169,16 +168,8 @@
                                   {frameWidth: HUMAN_WIDTH,
                                   frameHeight: HUMAN_HEIGHT});
         },
-
-        create: function () {
-            let titleObjects = this.add.group({active: false, runChildUpdate: true});
-            this.createGameObjects();
-            let menuObjects = this.add.group({active: false, runChildUpdate: true});
-
-            controls = this.input.keyboard.createCursorKeys();
-
-            this.startGame();
-
+        
+        create: function() {
             this.anims.create({
                 key: "runRight",
                 frameRate: 16,
@@ -202,6 +193,27 @@
                                                                    end: 23}),
                 repeat: -1
             });
+
+            this.scene.start("GameplayScene");
+        }
+    });
+
+    var GameplayScene = new Phaser.Class({
+        Extends: Phaser.Scene,
+
+        initialize: function PreloaderScene() {
+            Phaser.Scene.call(this, {
+                key: "GameplayScene"
+            });
+        },
+
+        create: function () {
+            this.createGameObjects();
+
+            controls = this.input.keyboard.createCursorKeys();
+
+            gameState = GAME_STATE.RUNNING;
+            this.gameClock = 0.0;
         },
 
         update: function (time, delta) {
@@ -240,22 +252,16 @@
             // Create some random trees.
             const availableDesigns = this.textures.get("trees").frameTotal - 1;
             let trees = [];
-            for (let i = 0; i < 30; i++) {
+            for (let theta = 0; theta < 360; theta += 2) {
+                let randomShift = Math.random() - 0.5;
                 let randomDesign = Math.floor(availableDesigns * Math.random());
-                let tree = new Scenery(this, "trees", randomDesign,
-                                       randInt(MAX_DIST, MIN_DIST),
-                                       randInt(360, 0));
+                let randomDist = (Math.random() * (MAX_DIST - MIN_DIST) +
+                                  MIN_DIST);
+                let tree = new Tree(this, "trees", randomDesign,
+                                    randomDist, theta + randomShift);
                 trees.push(tree);
             }
             gameObjects.addMultiple(trees, true);
-        },
-
-        startGame: function () {
-            if (gameState !== GAME_STATE.NOT_STARTED) {
-                return;
-            }
-            gameState = GAME_STATE.RUNNING;
-            this.gameClock = 0.0;
         }
     });
 
@@ -265,7 +271,7 @@
         type: Phaser.AUTO,
         width: WIDTH,
         height: HEIGHT,
-        scene: new FullMoonScene()
+        scene: [PreloaderScene, GameplayScene]
     };
 
     var game = new Phaser.Game(config);
