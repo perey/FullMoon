@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="800"
+   height="600"
+   viewBox="0 0 211.66666 158.75"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.0 r15299"
+   sodipodi:docname="title-screen.svg"
+   inkscape:export-filename="..\src\assets\title.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient821">
+      <stop
+         style="stop-color:#070039;stop-opacity:1"
+         offset="0"
+         id="stop817" />
+      <stop
+         style="stop-color:#2d2c3e;stop-opacity:1"
+         offset="1"
+         id="stop819" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient821"
+       id="linearGradient823"
+       x1="108.75"
+       y1="138.24998"
+       x2="108.75"
+       y2="296.99997"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.42333333"
+     inkscape:cx="560.79663"
+     inkscape:cy="230.71285"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-138.24998)">
+    <rect
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:url(#linearGradient823);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.05833328;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       id="rect10"
+       width="211.66666"
+       height="158.75"
+       x="0"
+       y="138.24998" />
+    <image
+       sodipodi:absref="C:\Users\Tim\Pictures\openclipart\150367-full-moon-400px.png"
+       y="226.49742"
+       x="-63.758087"
+       id="image841"
+       xlink:href="file:///C:/Users/Tim/Pictures/openclipart/150367-full-moon-400px.png"
+       style="stroke-width:0.79950047;image-rendering:optimizeQuality"
+       preserveAspectRatio="none"
+       height="132.37433"
+       width="131.38152" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:28.22222137px;line-height:1.10000002;font-family:'Libertinus Serif';-inkscape-font-specification:'Libertinus Serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       x="24.273155"
+       y="196.00427"
+       id="text827"><tspan
+         sodipodi:role="line"
+         x="24.273155"
+         y="196.00427"
+         style="font-weight:bold;font-size:28.22222137px;fill:#ffffff;stroke:#000000;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke markers fill"
+         id="tspan831">Night</tspan></text>
+    <text
+       id="text850"
+       y="211.47302"
+       x="24.273155"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;line-height:1.10000002;font-family:'Libertinus Serif';-inkscape-font-specification:'Libertinus Serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       xml:space="preserve"><tspan
+         id="tspan846"
+         style="font-weight:bold;font-size:14.11111069px;fill:#ffffff;stroke:#000000;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke markers fill"
+         y="211.47302"
+         x="24.273155"
+         sodipodi:role="line">of the</tspan><tspan
+         id="tspan848"
+         style="font-weight:bold;font-size:14.11111069px;fill:#ffffff;stroke:#000000;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke markers fill"
+         y="226.99524"
+         x="24.273155"
+         sodipodi:role="line" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:28.22222137px;line-height:0.80000001;font-family:'Libertinus Serif';-inkscape-font-specification:'Libertinus Serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       x="24.273155"
+       y="234.8119"
+       id="text858"><tspan
+         sodipodi:role="line"
+         x="24.273155"
+         y="234.8119"
+         style="font-weight:bold;font-size:28.22222137px;line-height:0.80000001;fill:#ffffff;stroke:#000000;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke markers fill"
+         id="tspan856">Full</tspan><tspan
+         sodipodi:role="line"
+         x="24.273155"
+         y="257.38968"
+         style="font-weight:bold;font-size:28.22222137px;line-height:0.80000001;fill:#ffffff;stroke:#000000;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke markers fill"
+         id="tspan871">Moon</tspan></text>
+  </g>
+</svg>

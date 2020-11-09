@@ -153,12 +153,31 @@
                 key: "PreloaderScene"
             });
         },
-        
+
         preload: function() {
-            let loadingText = this.add.text(WIDTH / 2, HEIGHT / 2, "Loading",
-                                            {font: "30px serif",
+            let loadingText = this.add.text(WIDTH / 2, HEIGHT / 2 - 30,
+                                            "Loading",
+                                            {font: "30px sans-serif",
                                              fill: "#FFFFFF"});
-            this.load.image("background", "./assets/night-sky.png");
+            loadingText.setOrigin(0.5, 0);
+
+            let progressBar = this.add.rectangle(WIDTH / 2, HEIGHT / 2 + 30,
+                                                 200, 30, 0x000000);
+            progressBar.setOrigin(0.5);
+            progressBar.setStrokeStyle(2, 0xFFFFFF);
+
+            let barBounds = progressBar.getBounds();
+            let progressFill = this.add.rectangle(barBounds.left + 3,
+                                                  barBounds.top + 3,
+                                                  0, barBounds.height - 6,
+                                                  0xFFFFFF);
+            progressFill.setOrigin(0, 0);
+            this.load.on("progress", function (progress) {
+                progressFill.width = progress * (barBounds.width - 6);
+            });
+
+            this.load.image("title", "./assets/title.png");
+            this.load.image("sky", "./assets/night-sky.png");
             this.load.image("ground", "./assets/ground.png");
             this.load.image("moon", "./assets/moon.png");
             this.load.spritesheet("trees", "./assets/trees.png",
@@ -168,7 +187,7 @@
                                   {frameWidth: HUMAN_WIDTH,
                                   frameHeight: HUMAN_HEIGHT});
         },
-        
+
         create: function() {
             this.anims.create({
                 key: "runRight",
@@ -194,7 +213,23 @@
                 repeat: -1
             });
 
-            this.scene.start("GameplayScene");
+            this.scene.start("TitleScene");
+        }
+    });
+
+    var TitleScene = new Phaser.Class({
+        Extends: Phaser.Scene,
+
+        initialize: function PreloaderScene() {
+            Phaser.Scene.call(this, {
+                key: "TitleScene"
+            });
+        },
+        
+        create: function() {
+            let bg = this.add.image(0, 0, "title");
+            bg.setOrigin(0, 0);
+            bg.setDisplaySize(WIDTH, HEIGHT);
         }
     });
 
@@ -236,10 +271,10 @@
         createGameObjects: function () {
             let gameObjects = this.add.group({active: true, runChildUpdate: true});
 
-            let bg = new Phaser.GameObjects.Image(this, 0, 0, "background");
-            bg.setOrigin(0, 0);
-            bg.setDisplaySize(WIDTH, HEIGHT);
-            gameObjects.add(bg, true);
+            let sky = new Phaser.GameObjects.Image(this, 0, 0, "sky");
+            sky.setOrigin(0, 0);
+            sky.setDisplaySize(WIDTH, HEIGHT);
+            gameObjects.add(sky, true);
 
             let moon = new Moon(this, "moon",
                                 Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
@@ -271,7 +306,7 @@
         type: Phaser.AUTO,
         width: WIDTH,
         height: HEIGHT,
-        scene: [PreloaderScene, GameplayScene]
+        scene: [PreloaderScene, TitleScene, GameplayScene]
     };
 
     var game = new Phaser.Game(config);
