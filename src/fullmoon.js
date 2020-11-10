@@ -209,6 +209,9 @@
             this.load.audio("titleMusic", ["./assets/title.ogg",
                                            "./assets/title.mp3",
                                            "./assets/title.m4a"]);
+            this.load.audio("gameMusic", ["./assets/game.ogg",
+                                          "./assets/game.mp3",
+                                          "./assets/game.m4a"]);
         },
 
         create: function() {
@@ -256,6 +259,13 @@
             
             this.music = this.sound.add("titleMusic", {loop: true});
             this.music.play();
+            
+            this.input.keyboard.on("keydown-SPACE", this.next);
+        },
+        
+        next: function () {
+            this.scene.music.stop()
+            this.scene.scene.start("GameplayScene");
         }
     });
 
@@ -270,6 +280,9 @@
 
         create: function () {
             this.createGameObjects();
+            
+            this.music = this.sound.add("gameMusic", {loop: true});
+            this.music.play();
 
             controls = this.input.keyboard.createCursorKeys();
 
@@ -281,6 +294,7 @@
             if (this.gameClock >= GAME_DUR * 60 * 1000) {
                 // Game over!
                 gameState = GAME_STATE.ENDED;
+                this.music.stop();
             }
 
             if (gameState === GAME_STATE.RUNNING) {
