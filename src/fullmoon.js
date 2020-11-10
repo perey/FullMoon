@@ -206,6 +206,9 @@
             this.load.spritesheet("runner", "./assets/runner.png",
                                   {frameWidth: HUMAN_WIDTH,
                                   frameHeight: HUMAN_HEIGHT});
+            this.load.audio("titleMusic", ["./assets/title.ogg",
+                                           "./assets/title.mp3",
+                                           "./assets/title.m4a"]);
         },
 
         create: function() {
@@ -250,6 +253,9 @@
             let bg = this.add.image(0, 0, "title");
             bg.setOrigin(0, 0);
             bg.setDisplaySize(WIDTH, HEIGHT);
+            
+            this.music = this.sound.add("titleMusic", {loop: true});
+            this.music.play();
         }
     });
 
