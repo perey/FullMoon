@@ -141,6 +141,35 @@
         }
     });
 
+    var ProgressBar = new Phaser.Class({
+        Extends: Phaser.GameObjects.Group,
+        
+        initialize: function ProgressBar(scene, x, y, width, height) {
+            Phaser.GameObjects.Group.call(this, scene);
+
+            this.outline = new Phaser.GameObjects.Rectangle(scene, x, y,
+                                                            width, height,
+                                                            0x000000);
+            this.outline.setOrigin(0.5);
+            this.outline.setStrokeStyle(2, 0xFFFFFF);
+            this.add(this.outline, true);
+
+            let bounds = this.outline.getBounds();
+            this.fillRect = new Phaser.GameObjects.Rectangle(scene, 
+                                                             bounds.left + 3,
+                                                             bounds.top + 3, 0,
+                                                             bounds.height - 6,
+                                                             0xFFFFFF);
+            this.fillRect.setOrigin(0, 0);
+            this.add(this.fillRect, true);
+        },
+        
+        setProgress: function (progress) {
+            let bounds = this.outline.getBounds();
+            this.fillRect.width = progress * (bounds.width - 6);
+        }
+    })
+
     // The game controls.
     var controls;
 
@@ -161,19 +190,10 @@
                                              fill: "#FFFFFF"});
             loadingText.setOrigin(0.5, 0);
 
-            let progressBar = this.add.rectangle(WIDTH / 2, HEIGHT / 2 + 30,
-                                                 200, 30, 0x000000);
-            progressBar.setOrigin(0.5);
-            progressBar.setStrokeStyle(2, 0xFFFFFF);
-
-            let barBounds = progressBar.getBounds();
-            let progressFill = this.add.rectangle(barBounds.left + 3,
-                                                  barBounds.top + 3,
-                                                  0, barBounds.height - 6,
-                                                  0xFFFFFF);
-            progressFill.setOrigin(0, 0);
+            let progressBar = new ProgressBar(this, WIDTH / 2, HEIGHT / 2 + 30,
+                                              200, 30);
             this.load.on("progress", function (progress) {
-                progressFill.width = progress * (barBounds.width - 6);
+                progressBar.setProgress(progress);
             });
 
             this.load.image("title", "./assets/title.png");
