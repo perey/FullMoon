@@ -8,7 +8,8 @@ and your custom silver-tipped lead slugs.
 
 A game written for the Game Off 2020 jam, with the theme “Moonshot”.
 
-##Credits
+## Credits
 
-Title music: [“Horror Soundtrack - amb_01” by Kenten Fina](https://opengameart.org/content/horror-soundtrack-8-tracks-the-hangar)
+Title music: [“Horror Soundtrack - amb_01” by Kenten Fina](https://opengameart.org/content/horror-soundtrack-8-tracks-the-hangar) (CC-BY 3.0)
+
 Game music: [“Haunted Woods” by Michael Klier](https://opengameart.org/content/haunted-woods-horror-drone) (CC-BY-SA 3.0)
