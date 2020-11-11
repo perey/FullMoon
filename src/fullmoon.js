@@ -200,6 +200,7 @@
             this.load.image("sky", "./assets/night-sky.png");
             this.load.image("ground", "./assets/ground.png");
             this.load.image("moon", "./assets/moon.png");
+            this.load.image("gun", "./assets/gun.png");
             this.load.spritesheet("trees", "./assets/trees.png",
                                   {frameWidth: TREE_WIDTH,
                                    frameHeight: TREE_HEIGHT});
@@ -337,6 +338,9 @@
                 trees.push(tree);
             }
             gameObjects.addMultiple(trees, true);
+            
+            let gun = this.add.image(WIDTH / 2, HEIGHT, "gun");
+            gun.setOrigin(0.5, 1);
         }
     });
 
