@@ -143,7 +143,7 @@
 
     var ProgressBar = new Phaser.Class({
         Extends: Phaser.GameObjects.Group,
-        
+
         initialize: function ProgressBar(scene, x, y, width, height) {
             Phaser.GameObjects.Group.call(this, scene);
 
@@ -155,7 +155,7 @@
             this.add(this.outline, true);
 
             let bounds = this.outline.getBounds();
-            this.fillRect = new Phaser.GameObjects.Rectangle(scene, 
+            this.fillRect = new Phaser.GameObjects.Rectangle(scene,
                                                              bounds.left + 3,
                                                              bounds.top + 3, 0,
                                                              bounds.height - 6,
@@ -163,7 +163,7 @@
             this.fillRect.setOrigin(0, 0);
             this.add(this.fillRect, true);
         },
-        
+
         setProgress: function (progress) {
             let bounds = this.outline.getBounds();
             this.fillRect.width = progress * (bounds.width - 6);
@@ -252,20 +252,20 @@
                 key: "TitleScene"
             });
         },
-        
+
         create: function() {
             let bg = this.add.image(0, 0, "title");
             bg.setOrigin(0, 0);
             bg.setDisplaySize(WIDTH, HEIGHT);
-            
+
             this.music = this.sound.add("titleMusic", {loop: true});
             this.music.play();
-            
+
             this.input.keyboard.on("keydown-SPACE", this.next);
         },
-        
+
         next: function () {
-            this.scene.music.stop()
+            this.scene.music.stop();
             this.scene.scene.start("GameplayScene");
         }
     });
@@ -281,7 +281,7 @@
 
         create: function () {
             this.createGameObjects();
-            
+
             this.music = this.sound.add("gameMusic", {loop: true});
             this.music.play();
 
@@ -338,7 +338,7 @@
                 trees.push(tree);
             }
             gameObjects.addMultiple(trees, true);
-            
+
             let gun = this.add.image(WIDTH / 2, HEIGHT, "gun");
             gun.setOrigin(0.5, 1);
         }
