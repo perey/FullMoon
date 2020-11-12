@@ -38,7 +38,8 @@
     const HUMAN_HEIGHT_OFFSET = 0.1;
 
     // How fast people run.
-    const HUMAN_SPEED = Phaser.Math.GetSpeed(208, 1);
+    // FIXME: Why is this not the calculated 208 units per second?
+    const HUMAN_SPEED = Phaser.Math.GetSpeed(0.6, 1);
 
     // The game duration, in minutes.
     const GAME_DUR = 1;
@@ -156,6 +157,7 @@
             this.animLeft = animLeft;
             this.animRight = animRight;
             this.animAt = animAt;
+            this.currentAnim = null;
             this.worldPos = worldPos;
 
             // Set the original position and size.
@@ -164,10 +166,14 @@
 
         update: function (time, delta) {
             // Consider which direction to move in.
-            let dir = -this.worldPos.angle(); // Right at the bunker!
+            let dir = this.worldPos.angle() + Math.PI / 2; // FIXME
 
             // Select the right sprite for the given direction.
-            this.play(this.animRight); // FIXME
+            let chosenAnim = this.animRight; // FIXME
+            if (this.currentAnim !== chosenAnim) {
+                this.currentAnim = chosenAnim;
+                this.play(chosenAnim);
+            }
 
             // Move in the current direction.
             let step = new Phaser.Math.Vector2(0, 0);
@@ -185,7 +191,7 @@
             // Put head height at the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
-            this.setScale(1 / this.r);
+            this.setScale(1 / this.worldPos.length());
         }
     })
 
@@ -370,9 +376,11 @@
                                 Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
             gameObjects.add(moon, true);
 
-            let ground = this.add.image(0, HORIZON, "ground");
+            let ground = new Phaser.GameObjects.Image(this, 0, HORIZON,
+                                                      "ground");
             ground.setOrigin(0, 0);
             ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
+            gameObjects.add(ground, true);
 
             // Create some random trees.
             const availableDesigns = this.textures.get("trees").frameTotal - 1;
@@ -391,10 +399,10 @@
             gameObjects.addMultiple(trees, true);
 
             let testPos = new Phaser.Math.Vector2(0, 0);
-            testPos.setToPolar(0, 5);
+            testPos.setToPolar(0, 2);
             let testFriendly = new Friendly(this, "runner", "runLeft",
                                             "runRight", "runAt", testPos);
-            gameObjects.add(testFriendly);
+            gameObjects.add(testFriendly, true);
 
             // The bunker's edges.
             let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0, 
@@ -402,12 +410,12 @@
                                                              WIDTH, 80,
                                                              0x888888);
             lowerEdge.setOrigin(0, 0);
-            gameObjects.add(lowerEdge);
+            gameObjects.add(lowerEdge, true);
 
             let gun = new Phaser.GameObjects.Image(this, WIDTH / 2, HEIGHT,
                                                    "gun");
             gun.setOrigin(0.5, 1);
-            gameObjects.add(gun);
+            gameObjects.add(gun, true);
         }
     });
 
