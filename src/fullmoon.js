@@ -35,6 +35,10 @@
     // The size, in pixels, of people.
     const HUMAN_WIDTH = 75;
     const HUMAN_HEIGHT = 85;
+    const HUMAN_HEIGHT_OFFSET = 0.1;
+
+    // How fast people run.
+    const HUMAN_SPEED = Phaser.Math.GetSpeed(208, 1);
 
     // The game duration, in minutes.
     const GAME_DUR = 1;
@@ -118,29 +122,74 @@
         }
     });
 
-    // An immobile item that blocks shots.
+    // An immobile bit of scenery that blocks shots.
     var Tree = new Phaser.Class({
         Extends: Phaser.GameObjects.Image,
 
-        initialize: function Tree(scene, sheet, frame, r, theta) {
+        initialize: function Tree(scene, sheet, frame, worldPos) {
             Phaser.GameObjects.Image.call(this, scene, 0, 0, sheet,
                                           frame);
-            this.r = r;
-            this.theta = theta;
+            this.worldPos = worldPos;
             // Set the initial position and the (unchanging) size.
             this.update();
-            this.setScale(TREE_MAX_SCALE / r);
+            this.setScale(TREE_MAX_SCALE / this.worldPos.length());
         },
 
         update: function () {
             // Convert the visual angle to a horizontal position.
-            let x = angleToXPosition(this.theta);
+            let x = angleToXPosition(this.worldPos.angle() *
+                                     Phaser.Math.RAD_TO_DEG);
             // Centre all trees on the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
         }
     });
 
+    // A friendly. Don't shoot!
+    var Friendly = new Phaser.Class({
+        Extends: Phaser.GameObjects.Sprite,
+
+        initialize: function Friendly(scene, sheet, animLeft, animRight,
+                                      animAt, worldPos) {
+            Phaser.GameObjects.Sprite.call(this, scene, 0, 0, sheet);
+            this.setOrigin(0.5, HUMAN_HEIGHT_OFFSET);
+            this.animLeft = animLeft;
+            this.animRight = animRight;
+            this.animAt = animAt;
+            this.worldPos = worldPos;
+
+            // Set the original position and size.
+            this.updatePosition();
+        },
+
+        update: function (time, delta) {
+            // Consider which direction to move in.
+            let dir = -this.worldPos.angle(); // Right at the bunker!
+
+            // Select the right sprite for the given direction.
+            this.play(this.animRight); // FIXME
+
+            // Move in the current direction.
+            let step = new Phaser.Math.Vector2(0, 0);
+            step.setToPolar(dir, HUMAN_SPEED * delta);
+            this.worldPos.add(step);
+
+            // Set the new on-screen position and size.
+            this.updatePosition();
+        },
+
+        updatePosition: function () {
+            // Convert the visual angle to a horizontal position.
+            let x = angleToXPosition(this.worldPos.angle() *
+                                     Phaser.Math.RAD_TO_DEG);
+            // Put head height at the horizon.
+            let y = HORIZON;
+            this.setPosition(x, y);
+            this.setScale(1 / this.r);
+        }
+    })
+
+    // A progress bar for the loading screen.
     var ProgressBar = new Phaser.Class({
         Extends: Phaser.GameObjects.Group,
 
@@ -333,14 +382,32 @@
                 let randomDesign = Math.floor(availableDesigns * Math.random());
                 let randomDist = (Math.random() * (MAX_DIST - MIN_DIST) +
                                   MIN_DIST);
-                let tree = new Tree(this, "trees", randomDesign,
-                                    randomDist, theta + randomShift);
+                let pos = new Phaser.Math.Vector2(0, 0);
+                pos.setToPolar((theta + randomShift) * Phaser.Math.DEG_TO_RAD,
+                               randomDist);
+                let tree = new Tree(this, "trees", randomDesign, pos);
                 trees.push(tree);
             }
             gameObjects.addMultiple(trees, true);
 
-            let gun = this.add.image(WIDTH / 2, HEIGHT, "gun");
+            let testPos = new Phaser.Math.Vector2(0, 0);
+            testPos.setToPolar(0, 5);
+            let testFriendly = new Friendly(this, "runner", "runLeft",
+                                            "runRight", "runAt", testPos);
+            gameObjects.add(testFriendly);
+
+            // The bunker's edges.
+            let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0, 
+                                                             HEIGHT - 80,
+                                                             WIDTH, 80,
+                                                             0x888888);
+            lowerEdge.setOrigin(0, 0);
+            gameObjects.add(lowerEdge);
+
+            let gun = new Phaser.GameObjects.Image(this, WIDTH / 2, HEIGHT,
+                                                   "gun");
             gun.setOrigin(0.5, 1);
+            gameObjects.add(gun);
         }
     });
 
