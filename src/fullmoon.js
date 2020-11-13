@@ -24,17 +24,18 @@
     const MOON_PEAK = HEIGHT + 2 * MOON_RADIUS;
 
     // The near and far limits on trees.
-    const MIN_DIST = 1;
-    const MAX_DIST = 15;
+    const MIN_TREE_DIST = 1;
+    const MAX_TREE_DIST = 15;
 
     // The size, in pixels, of trees.
     const TREE_WIDTH = 150;
     const TREE_HEIGHT = 200;
-    const TREE_MAX_SCALE = 1.25;
+    const TREE_SCALE = 1.25;
 
     // The size, in pixels, of people.
     const HUMAN_WIDTH = 75;
     const HUMAN_HEIGHT = 85;
+    const HUMAN_SCALE = 1;
     const HUMAN_HEIGHT_OFFSET = 0.1;
 
     // How fast people run.
@@ -127,13 +128,18 @@
     var Tree = new Phaser.Class({
         Extends: Phaser.GameObjects.Image,
 
-        initialize: function Tree(scene, sheet, frame, worldPos) {
+        initialize: function Tree(scene, sheet, worldPos) {
+            // Choose a random frame. (Why "- 1"? I don't know! But it thinks
+            // there's one more frame than there actually is.)
+            let frameCount = scene.textures.get(sheet).frameTotal - 1;
+            let randomFrame = Phaser.Math.Between(0, frameCount - 1);
+
             Phaser.GameObjects.Image.call(this, scene, 0, 0, sheet,
-                                          frame);
+                                          randomFrame);
             this.worldPos = worldPos;
             // Set the initial position and the (unchanging) size.
             this.update();
-            this.setScale(TREE_MAX_SCALE / this.worldPos.length());
+            this.setScale(TREE_SCALE / this.worldPos.length());
         },
 
         update: function () {
@@ -168,7 +174,7 @@
             // Consider which direction to move in.
             let dir = this.worldPos.angle() + Math.PI / 2; // FIXME
 
-            // Select the right sprite for the given direction.
+            // Select the right animation for the given direction.
             let chosenAnim = this.animRight; // FIXME
             if (this.currentAnim !== chosenAnim) {
                 this.currentAnim = chosenAnim;
@@ -191,7 +197,7 @@
             // Put head height at the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
-            this.setScale(1 / this.worldPos.length());
+            this.setScale(HUMAN_SCALE / this.worldPos.length());
         }
     })
 
@@ -383,20 +389,7 @@
             gameObjects.add(ground, true);
 
             // Create some random trees.
-            const availableDesigns = this.textures.get("trees").frameTotal - 1;
-            let trees = [];
-            for (let theta = 0; theta < 360; theta += 2) {
-                let randomShift = Math.random() - 0.5;
-                let randomDesign = Math.floor(availableDesigns * Math.random());
-                let randomDist = (Math.random() * (MAX_DIST - MIN_DIST) +
-                                  MIN_DIST);
-                let pos = new Phaser.Math.Vector2(0, 0);
-                pos.setToPolar((theta + randomShift) * Phaser.Math.DEG_TO_RAD,
-                               randomDist);
-                let tree = new Tree(this, "trees", randomDesign, pos);
-                trees.push(tree);
-            }
-            gameObjects.addMultiple(trees, true);
+            gameObjects.addMultiple(this.placeTrees(), true);
 
             let testPos = new Phaser.Math.Vector2(0, 0);
             testPos.setToPolar(0, 2);
@@ -416,6 +409,135 @@
                                                    "gun");
             gun.setOrigin(0.5, 1);
             gameObjects.add(gun, true);
+        },
+
+        placeTrees: function () {
+            // Randomly distribute trees, using Bridson's algorithm to avoid
+            // making clusters that are too close together. These are the
+            // parameters for the algorithm in two dimensions.
+            const R = 1.3; // The density parameter. Experimentally tested to
+                           // give about 300 trees.
+            const MAX_TRIES = 30;
+            
+            // And these are useful constants for later calculations.
+            const CELL_SIZE = R / Math.sqrt(2);
+            const WORLD_CELLS = Math.ceil(2 * MAX_TREE_DIST / CELL_SIZE);
+            const MAX_CELL_STEP = Math.ceil(2 * R / CELL_SIZE);
+            
+            // This function converts a world coordinate (x or y) in the range
+            // [-MAX_TREE_DIST, MAX_TREE_DIST] to cell coordinates in the range
+            // [0, WORLD_CELLS).
+            let worldToGrid = function (w) {
+                return Math.floor((w + MAX_TREE_DIST) / CELL_SIZE);
+            }
+
+            let trees = [];
+
+            // Set up a 2D array to represent a grid of cells, such that only
+            // one tree may be in each cell without violating the density
+            // constraint. This means each cell has a size of R/sqrt(2).
+            let grid = new Array(WORLD_CELLS);
+            for (let index = 0; index < WORLD_CELLS; index++) {
+                grid[index] = new Array(WORLD_CELLS);
+            }
+
+            // Place a first (non-random) tree.
+            let treeX = 0;
+            let treeY = MAX_TREE_DIST;
+            let treePos = new Phaser.Math.Vector2(treeX, treeY);
+            trees.push(new Tree(this, "trees", treePos));
+            
+            // Mark this tree (index 0 in the trees array) on the grid.
+            let xCell = worldToGrid(treeX);
+            let yCell = worldToGrid(treeY);
+            grid[xCell][yCell] = 0;
+            
+            // Initialise the list of active trees (those that can be used as
+            // the starting point for placing a new tree nearby, but not too
+            // near).
+            let activeList = [treePos];
+            
+            // While there are still active trees, pick one at random and
+            // try to place a new tree near it.
+            while (activeList.length > 0) {
+                let startIndex = Phaser.Math.Between(0, activeList.length - 1);
+                let startPos = activeList[startIndex];
+                let startXCell = worldToGrid(startPos.x);
+                let startYCell = worldToGrid(startPos.y);
+                
+                let tries = 0;
+                let placed = false;
+                while (!placed && tries < MAX_TRIES) {
+                    let xOffset = (R * (Math.random() + 1) *
+                                   Phaser.Math.RND.sign());
+                    let yOffset = (R * (Math.random() + 1) *
+                                   Phaser.Math.RND.sign());
+                    let tryPos = new Phaser.Math.Vector2(xOffset, yOffset);
+                    tryPos.add(startPos);
+                    
+                    // Weed out attempts that are outside the grid.
+                    let tryXCell = worldToGrid(tryPos.x);
+                    let tryYCell = worldToGrid(tryPos.y);
+                    if (tryXCell < 0 || tryXCell >= WORLD_CELLS ||
+                        tryYCell < 0 || tryYCell >= WORLD_CELLS) {
+                        tries++;
+                        continue;
+                    }
+                    // This should have also weeded out any trees more than the
+                    // desired distance from the bunker... except for literal
+                    // corner cases, where the grid corners are further than
+                    // the edges. Let's also remove  any candidates that are
+                    // too close to the bunker.
+                    if (tryPos.length() > MAX_TREE_DIST ||
+                        tryPos.length() < MIN_TREE_DIST) {
+                        tries++;
+                        continue;
+                    }
+                    
+                    // Is this too close to an existing tree? Search the cells
+                    // nearest to the start cell.
+                    let tooClose = false;
+                    for (let xStep = -MAX_CELL_STEP;
+                         xStep <= MAX_CELL_STEP && !tooClose; xStep++) {
+                        for (let yStep = -MAX_CELL_STEP;
+                             yStep <= MAX_CELL_STEP && !tooClose; yStep++) {
+                            // Is this cell actually the centre? Is it even
+                            // on the grid?
+                            if ((xStep === 0 && yStep === 0) ||
+                                (startXCell + xStep < 0 ||
+                                 startXCell + xStep >= WORLD_CELLS) ||
+                                (startYCell + yStep < 0 ||
+                                 startYCell + yStep >= WORLD_CELLS)) {
+                                     continue;
+                            }
+                            // Okay, so it's a valid adjacent cell. Does it
+                            // have a tree in it?
+                            let maybeTreeIndex = grid[startXCell + xStep][startYCell + yStep];
+                            if (typeof maybeTreeIndex !== "undefined") {
+                                // Yes. Is the candidate too close to that
+                                // tree?
+                                if (tryPos.distance(trees[maybeTreeIndex].worldPos) < R) {
+                                    // Yes.
+                                    tooClose = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!tooClose) {
+                        // It passed! Place a new tree there.
+                        placed = true;
+                        grid[tryXCell][tryYCell] = trees.length;
+                        trees.push(new Tree(this, "trees", tryPos));
+                        activeList.push(tryPos);
+                    }
+                    tries++;
+                }
+                if (!placed) {
+                    // Ran out of tries. Remove this tree from the active list.
+                    activeList.splice(startIndex, 1);
+                }
+            }
+            return trees;
         }
     });
 
