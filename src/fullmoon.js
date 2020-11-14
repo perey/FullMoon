@@ -27,6 +27,11 @@
     const MIN_TREE_DIST = 1;
     const MAX_TREE_DIST = 15;
 
+    // The size, in pixels, of title screen buttons.
+    const BUTTON_WIDTH = 250;
+    const BUTTON_HEIGHT = 110;
+    const BUTTON_SHIFT = 10;
+
     // The size, in pixels, of trees.
     const TREE_WIDTH = 150;
     const TREE_HEIGHT = 200;
@@ -229,7 +234,46 @@
             let bounds = this.outline.getBounds();
             this.fillRect.width = progress * (bounds.width - 6);
         }
-    })
+    });
+
+    var Button = new Phaser.Class({
+        Extends: Phaser.GameObjects.Group,
+
+        initialize: function Button(scene, text, x, y, sheet, fn) {
+            Phaser.GameObjects.Group.call(this, scene);
+
+            this.y = y;
+
+            this.buttonImage = new Phaser.GameObjects.Sprite(scene, x, y,
+                                                             sheet, 0);
+            this.add(this.buttonImage, true);
+
+            this.buttonText = new Phaser.GameObjects.Text(
+                scene, x, y, text,
+                {font: (0.6 * BUTTON_HEIGHT) + "px sans-serif",
+                 fill: "#FFFFFF"});
+            this.buttonText.setOrigin(0.5, 0.6);
+            this.add(this.buttonText, true);
+
+            this.activate = fn;
+        },
+
+        deselect: function () {
+            this.buttonImage.setFrame(0);
+            this.buttonText.setY(this.y);
+        },
+
+        select: function () {
+            this.buttonImage.setFrame(1);
+            this.buttonText.setY(this.y + BUTTON_SHIFT);
+        },
+
+        toggleSelect: function () {
+            let newState = +!(this.buttonImage.frame);
+            this.buttonImage.setFrame(newState);
+            this.buttonText.setY(this.y + newState * BUTTON_SHIFT)
+        }
+    });
 
     // The game controls.
     var controls;
@@ -258,10 +302,14 @@
             });
 
             this.load.image("title", "./assets/title.png");
+            this.load.image("logo", "./assets/gameoff-white.png");
             this.load.image("sky", "./assets/night-sky.png");
             this.load.image("ground", "./assets/ground.png");
             this.load.image("moon", "./assets/moon.png");
             this.load.image("gun", "./assets/gun.png");
+            this.load.spritesheet("button", "./assets/button.png",
+                                  {frameWidth: BUTTON_WIDTH,
+                                   frameHeight: BUTTON_HEIGHT});
             this.load.spritesheet("trees", "./assets/trees.png",
                                   {frameWidth: TREE_WIDTH,
                                    frameHeight: TREE_HEIGHT});
@@ -319,13 +367,52 @@
             bg.setOrigin(0, 0);
             bg.setDisplaySize(WIDTH, HEIGHT);
 
+            let logo = this.add.image(WIDTH - 10, 10, "logo");
+            logo.setOrigin(1, 0);
+
+            let playButton = new Button(this, "Play", WIDTH * 3 / 4,
+                                        HEIGHT * 2 / 5, "button",
+                                        this.startGame);
+            this.add.existing(playButton);
+            let optionsButton = new Button(this, "Options", WIDTH * 3 / 4,
+                                           HEIGHT * 3 / 5, "button");
+            this.add.existing(optionsButton);
+            let creditsButton = new Button(this, "About", WIDTH * 3 / 4,
+                                           HEIGHT * 4 / 5, "button");
+            this.add.existing(creditsButton);
+
+            this.buttons = [playButton, optionsButton, creditsButton];
+            this.buttonIndex = 0
+            playButton.select();
+
             this.music = this.sound.add("titleMusic", {loop: true});
             this.music.play();
 
-            this.input.keyboard.on("keydown-SPACE", this.next);
+            this.input.keyboard.on("keydown-UP", this.prevButton);
+            this.input.keyboard.on("keydown-DOWN", this.nextButton);
+            this.input.keyboard.on("keydown-ENTER", this.activateButton);
+        },
+        
+        activateButton: function () {
+            this.scene.buttons[this.scene.buttonIndex].activate();
         },
 
-        next: function () {
+        nextButton: function() {
+            this.scene.buttons[this.scene.buttonIndex].deselect();
+            this.scene.buttonIndex = (this.scene.buttonIndex + 1) % this.scene.buttons.length;
+            this.scene.buttons[this.scene.buttonIndex].select();
+        },
+        
+        prevButton: function() {
+            this.scene.buttons[this.scene.buttonIndex].deselect();
+            this.scene.buttonIndex--;
+            if (this.scene.buttonIndex < 0) {
+                this.scene.buttonIndex += this.scene.buttons.length;
+            }
+            this.scene.buttons[this.scene.buttonIndex].select();
+        },
+
+        startGame: function () {
             this.scene.music.stop();
             this.scene.scene.start("GameplayScene");
         }
@@ -398,7 +485,7 @@
             gameObjects.add(testFriendly, true);
 
             // The bunker's edges.
-            let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0, 
+            let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0,
                                                              HEIGHT - 80,
                                                              WIDTH, 80,
                                                              0x888888);
@@ -418,15 +505,15 @@
             const R = 1.3; // The density parameter. Experimentally tested to
                            // give about 300 trees.
             const MAX_TRIES = 30;
-            
+
             // And these are useful constants for later calculations.
             const CELL_SIZE = R / Math.sqrt(2);
             const WORLD_CELLS = Math.ceil(2 * MAX_TREE_DIST / CELL_SIZE);
             const MAX_CELL_STEP = Math.ceil(2 * R / CELL_SIZE);
-            
+
             // This function converts a world coordinate (x or y) in the range
             // [-MAX_TREE_DIST, MAX_TREE_DIST] to cell coordinates in the range
-            // [0, WORLD_CELLS).
+            // [0, WORLD_CELLS].
             let worldToGrid = function (w) {
                 return Math.floor((w + MAX_TREE_DIST) / CELL_SIZE);
             }
@@ -446,17 +533,17 @@
             let treeY = MAX_TREE_DIST;
             let treePos = new Phaser.Math.Vector2(treeX, treeY);
             trees.push(new Tree(this, "trees", treePos));
-            
+
             // Mark this tree (index 0 in the trees array) on the grid.
             let xCell = worldToGrid(treeX);
             let yCell = worldToGrid(treeY);
             grid[xCell][yCell] = 0;
-            
+
             // Initialise the list of active trees (those that can be used as
             // the starting point for placing a new tree nearby, but not too
             // near).
             let activeList = [treePos];
-            
+
             // While there are still active trees, pick one at random and
             // try to place a new tree near it.
             while (activeList.length > 0) {
@@ -464,7 +551,7 @@
                 let startPos = activeList[startIndex];
                 let startXCell = worldToGrid(startPos.x);
                 let startYCell = worldToGrid(startPos.y);
-                
+
                 let tries = 0;
                 let placed = false;
                 while (!placed && tries < MAX_TRIES) {
@@ -474,7 +561,7 @@
                                    Phaser.Math.RND.sign());
                     let tryPos = new Phaser.Math.Vector2(xOffset, yOffset);
                     tryPos.add(startPos);
-                    
+
                     // Weed out attempts that are outside the grid.
                     let tryXCell = worldToGrid(tryPos.x);
                     let tryYCell = worldToGrid(tryPos.y);
@@ -493,7 +580,7 @@
                         tries++;
                         continue;
                     }
-                    
+
                     // Is this too close to an existing tree? Search the cells
                     // nearest to the start cell.
                     let tooClose = false;
