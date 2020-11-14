@@ -322,6 +322,9 @@
             this.load.audio("gameMusic", ["./assets/game.ogg",
                                           "./assets/game.mp3",
                                           "./assets/game.m4a"]);
+            this.load.audio("gunshot", ["./assets/shot.ogg",
+                                        "./assets/shot.mp3",
+                                        "./assets/shot.m4a"]);
         },
 
         create: function() {
