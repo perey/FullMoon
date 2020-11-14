@@ -319,6 +319,9 @@
             this.load.spritesheet("runner", "./assets/runner.png",
                                   {frameWidth: HUMAN_WIDTH,
                                   frameHeight: HUMAN_HEIGHT});
+            this.load.spritesheet("flashFrames", "./assets/flash.png",
+                                  {frameWidth: 200,
+                                  frameHeight: 250});
             this.load.audio("titleMusic", ["./assets/title.ogg",
                                            "./assets/title.mp3",
                                            "./assets/title.m4a"]);
@@ -353,6 +356,14 @@
                 frames: this.anims.generateFrameNumbers("runner", {start: 12,
                                                                    end: 23}),
                 repeat: -1
+            });
+
+            this.anims.create({
+                key: "flash",
+                frameRate: 20,
+                frames: this.anims.generateFrameNumbers("flashFrames",
+                                                        {start: 0, end: 3}),
+                repeat: 0
             });
 
             this.scene.start("TitleScene");
@@ -505,6 +516,11 @@
             lowerEdge.setOrigin(0, 0);
             gameObjects.add(lowerEdge, true);
 
+            this.muzzleFlash = new Phaser.GameObjects.Sprite(this, WIDTH / 2,
+                                                             HEIGHT,
+                                                             "flashFrames", 3);
+            this.muzzleFlash.setOrigin(0.5, 1);
+            gameObjects.add(this.muzzleFlash, true);
             let gun = new Phaser.GameObjects.Image(this, WIDTH / 2, HEIGHT,
                                                    "gun");
             gun.setOrigin(0.5, 1);
@@ -639,11 +655,13 @@
             }
             return trees;
         },
-        
+
         shoot: function () {
             if (this.scene.shotCooldown <= 0) {
                 this.scene.shotSound.play();
                 this.scene.shotCooldown = SHOT_DELAY;
+
+                this.scene.muzzleFlash.play("flash");
             }
         }
     });
