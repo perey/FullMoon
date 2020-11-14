@@ -47,6 +47,9 @@
     // FIXME: Why is this not the calculated 208 units per second?
     const HUMAN_SPEED = Phaser.Math.GetSpeed(0.6, 1);
 
+    // The delay, in milliseconds, between shots.
+    const SHOT_DELAY = 150;
+
     // The game duration, in minutes.
     const GAME_DUR = 1;
 
@@ -395,7 +398,7 @@
             this.input.keyboard.on("keydown-DOWN", this.nextButton);
             this.input.keyboard.on("keydown-ENTER", this.activateButton);
         },
-        
+
         activateButton: function () {
             this.scene.buttons[this.scene.buttonIndex].activate();
         },
@@ -405,7 +408,7 @@
             this.scene.buttonIndex = (this.scene.buttonIndex + 1) % this.scene.buttons.length;
             this.scene.buttons[this.scene.buttonIndex].select();
         },
-        
+
         prevButton: function() {
             this.scene.buttons[this.scene.buttonIndex].deselect();
             this.scene.buttonIndex--;
@@ -440,6 +443,10 @@
 
             gameState = GAME_STATE.RUNNING;
             this.gameClock = 0.0;
+
+            this.shotCooldown = 0.0;
+            this.shotSound = this.sound.add("gunshot");
+            this.input.keyboard.on("keydown-SPACE", this.shoot);
         },
 
         update: function (time, delta) {
@@ -456,6 +463,9 @@
                     player.turnLeft(delta);
                 } else if (controls.right.isDown) {
                     player.turnRight(delta);
+                }
+                if (this.shotCooldown > 0) {
+                    this.shotCooldown -= delta;
                 }
             }
         },
@@ -628,6 +638,13 @@
                 }
             }
             return trees;
+        },
+        
+        shoot: function () {
+            if (this.scene.shotCooldown <= 0) {
+                this.scene.shotSound.play();
+                this.scene.shotCooldown = SHOT_DELAY;
+            }
         }
     });
 
