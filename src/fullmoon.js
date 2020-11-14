@@ -48,7 +48,7 @@
     const HUMAN_SPEED = Phaser.Math.GetSpeed(0.6, 1);
 
     // The delay, in milliseconds, between shots.
-    const SHOT_DELAY = 150;
+    const SHOT_DELAY = 150; // 400 shots per minute.
 
     // The game duration, in minutes.
     const GAME_DUR = 1;
