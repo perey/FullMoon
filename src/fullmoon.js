@@ -47,6 +47,16 @@
     // FIXME: Why is this not the calculated 208 units per second?
     const HUMAN_SPEED = Phaser.Math.GetSpeed(0.6, 1);
 
+    // The size, in pixels, of werewolves.
+    const WOLF_WIDTH = 162;
+    const WOLF_HEIGHT = 75;
+    const WOLF_SCALE = 1;
+    const WOLF_HEIGHT_OFFSET = 0.1;
+
+    // How fast werewolves run.
+    // FIXME: This is calculated at 928 units per second.
+    const WOLF_SPEED = Phaser.Math.GetSpeed(2.7, 1);
+
     // The delay, in milliseconds, between shots.
     const SHOT_DELAY = 400; // 150 shots per minute.
 
@@ -207,7 +217,56 @@
             this.setPosition(x, y);
             this.setScale(HUMAN_SCALE / this.worldPos.length());
         }
-    })
+    });
+
+    // An enemy. Shoot it!
+    var Enemy = new Phaser.Class({
+        Extends: Phaser.GameObjects.Sprite,
+
+        initialize: function Enemy(scene, sheet, animLeft, animRight,
+                                   animAt, worldPos) {
+            Phaser.GameObjects.Sprite.call(this, scene, 0, 0, sheet);
+            this.setOrigin(0.5, WOLF_HEIGHT_OFFSET);
+            this.animLeft = animLeft;
+            this.animRight = animRight;
+            this.animAt = animAt;
+            this.currentAnim = null;
+            this.worldPos = worldPos;
+
+            // Set the original position and size.
+            this.updatePosition();
+        },
+
+        update: function (time, delta) {
+            // Consider which direction to move in.
+            let dir = this.worldPos.angle() + Math.PI / 2; // FIXME
+
+            // Select the right animation for the given direction.
+            let chosenAnim = this.animRight; // FIXME
+            if (this.currentAnim !== chosenAnim) {
+                this.currentAnim = chosenAnim;
+                this.play(chosenAnim);
+            }
+
+            // Move in the current direction.
+            let step = new Phaser.Math.Vector2(0, 0);
+            step.setToPolar(dir, WOLF_SPEED * delta);
+            this.worldPos.add(step);
+
+            // Set the new on-screen position and size.
+            this.updatePosition();
+        },
+
+        updatePosition: function () {
+            // Convert the visual angle to a horizontal position.
+            let x = angleToXPosition(this.worldPos.angle() *
+                                     Phaser.Math.RAD_TO_DEG);
+            // Put head height at the horizon.
+            let y = HORIZON;
+            this.setPosition(x, y);
+            this.setScale(WOLF_SCALE / this.worldPos.length());
+        }
+    });
 
     // A progress bar for the loading screen.
     var ProgressBar = new Phaser.Class({
@@ -319,6 +378,9 @@
             this.load.spritesheet("runner", "./assets/runner.png",
                                   {frameWidth: HUMAN_WIDTH,
                                   frameHeight: HUMAN_HEIGHT});
+            this.load.spritesheet("werewolf", "./assets/werewolf.png",
+                                  {frameWidth: WOLF_WIDTH,
+                                  frameHeight: WOLF_HEIGHT});
             this.load.spritesheet("flashFrames", "./assets/flash.png",
                                   {frameWidth: 200,
                                   frameHeight: 250});
@@ -355,6 +417,14 @@
                 frameRate: 16,
                 frames: this.anims.generateFrameNumbers("runner", {start: 12,
                                                                    end: 23}),
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: "wolfRight",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("werewolf", {start: 0,
+                                                                     end: 5}),
                 repeat: -1
             });
 
@@ -507,6 +577,12 @@
             let testFriendly = new Friendly(this, "runner", "runLeft",
                                             "runRight", "runAt", testPos);
             gameObjects.add(testFriendly, true);
+            
+            testPos = new Phaser.Math.Vector2(0, 0);
+            testPos.setToPolar(0, 2);
+            let testEnemy = new Enemy(this, "werewolf", "runLeft",
+                                      "wolfRight", "runAt", testPos);
+            gameObjects.add(testEnemy, true);
 
             // The bunker's edges.
             let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0,
