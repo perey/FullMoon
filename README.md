@@ -16,6 +16,8 @@ Game music: [“Haunted Woods” by Michael Klier](https://opengameart.org/conte
 
 Shotgun sound: [“10 Guage Shotgun” by Mike Koenig](http://soundbible.com/1262-10-Guage-Shotgun.html) (CC-BY 3.0). The original has been cropped.
 
+Reload sound: [“weapons/shotgun/reload” from Red Eclipse](https://github.com/redeclipse/sounds/tree/3b1f0288623111172b86ea7bf58a77d969b7c920/weapons/shotgun) (CC-BY-SA 3.0)
+
 Moon graphic: [“Full moon” by dimitri](https://openclipart.org/detail/150367/full-moon) (public domain)
 
 Game Off logo by Lee Reilly
