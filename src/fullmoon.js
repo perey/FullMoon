@@ -41,7 +41,7 @@
     const HUMAN_WIDTH = 75;
     const HUMAN_HEIGHT = 85;
     const HUMAN_SCALE = 1;
-    const HUMAN_HEIGHT_OFFSET = 0.1;
+    const HUMAN_HEIGHT_OFFSET = 0.1; // This is proportion, not pixels.
 
     // How fast people run.
     // FIXME: Why is this not the calculated 208 units per second?
@@ -50,12 +50,12 @@
     // The size, in pixels, of werewolves.
     const WOLF_WIDTH = 162;
     const WOLF_HEIGHT = 75;
-    const WOLF_SCALE = 1;
-    const WOLF_HEIGHT_OFFSET = 0.1;
+    const WOLF_SCALE = 0.8;
+    const WOLF_HEIGHT_OFFSET = 10; // This is pixels, not proportion.
 
     // How fast werewolves run.
-    // FIXME: This is calculated at 928 units per second.
-    const WOLF_SPEED = Phaser.Math.GetSpeed(2.7, 1);
+    // FIXME: This is calculated at 742.4 units per second.
+    const WOLF_SPEED = Phaser.Math.GetSpeed(2, 1);
 
     // The delay, in milliseconds, between shots.
     const SHOT_DELAY = 400; // 150 shots per minute.
@@ -226,7 +226,7 @@
         initialize: function Enemy(scene, sheet, animLeft, animRight,
                                    animAt, worldPos) {
             Phaser.GameObjects.Sprite.call(this, scene, 0, 0, sheet);
-            this.setOrigin(0.5, WOLF_HEIGHT_OFFSET);
+            this.setOrigin(0.5, 0);
             this.animLeft = animLeft;
             this.animRight = animRight;
             this.animAt = animAt;
@@ -262,7 +262,7 @@
             let x = angleToXPosition(this.worldPos.angle() *
                                      Phaser.Math.RAD_TO_DEG);
             // Put head height at the horizon.
-            let y = HORIZON;
+            let y = HORIZON + WOLF_HEIGHT_OFFSET;
             this.setPosition(x, y);
             this.setScale(WOLF_SCALE / this.worldPos.length());
         }
