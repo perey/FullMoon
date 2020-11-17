@@ -1,6 +1,6 @@
-#Roadmap
+# Roadmap
 
-##Key features
+## Key features
 
 * Enemies
 * Shooting
@@ -10,7 +10,7 @@
 * Game end
 * Title screen
 
-##Highly desirable
+## Highly desirable
 
 * Intro text
 * Sound effects
@@ -22,7 +22,7 @@
 * Multiple AI behaviours
 * Endgame surprise
 
-##Nice to have
+## Nice to have
 
 * Music
 * Multiple types of friendlies
@@ -32,3 +32,8 @@
 * More options
   * Screen shake toggle
   * Graphics contrast
+
+## Fixes
+
+* Pad top of wolf frames so its offset works the same as the humans’
+* Tint trees in the distance a lighter grey
