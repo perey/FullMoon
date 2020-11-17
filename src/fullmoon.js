@@ -42,6 +42,7 @@
     const HUMAN_HEIGHT = 85;
     const HUMAN_SCALE = 1;
     const HUMAN_HEIGHT_OFFSET = 0.1; // This is proportion, not pixels.
+    const HUMAN_SAFE_DISTANCE = 0.1;
 
     // How fast people run.
     // FIXME: Why is this not the calculated 208 units per second?
@@ -190,10 +191,21 @@
 
         update: function (time, delta) {
             // Consider which direction to move in.
-            let dir = this.worldPos.angle() + Math.PI / 2; // FIXME
+            let dir = Math.PI - this.worldPos.angle(); // FIXME
 
             // Select the right animation for the given direction.
-            let chosenAnim = this.animRight; // FIXME
+            let chosenAnim;
+            let s = Math.sin(this.worldPos.angle() - dir);
+            if (s ** 2 < 0.5) {
+                // Running towards (or away from) the bunker.
+                chosenAnim = this.animAt;
+            } else if (s > 0) {
+                // Running left (anticlockwise) relative to the bunker.
+                chosenAnim = this.animLeft;
+            } else {
+                // Running right (clockwise) relative to the bunker.
+                chosenAnim = this.animRight;
+            }
             if (this.currentAnim !== chosenAnim) {
                 this.currentAnim = chosenAnim;
                 this.play(chosenAnim);
@@ -204,8 +216,14 @@
             step.setToPolar(dir, HUMAN_SPEED * delta);
             this.worldPos.add(step);
 
-            // Set the new on-screen position and size.
-            this.updatePosition();
+            // Are they safe?
+            if (this.worldPos.length() <= HUMAN_SAFE_DISTANCE) {
+                this.scene.savedFriendly();
+                this.destroy();
+            } else {
+                // Set the new on-screen position and size.
+                this.updatePosition();
+            }
         },
 
         updatePosition: function () {
@@ -393,6 +411,9 @@
             this.load.audio("gunshot", ["./assets/shot.ogg",
                                         "./assets/shot.mp3",
                                         "./assets/shot.m4a"]);
+            this.load.audio("bunkerDoor", ["./assets/bunker.ogg",
+                                           "./assets/bunker.mp3",
+                                           "./assets/bunker.m4a"]);
         },
 
         create: function() {
@@ -425,6 +446,14 @@
                 frameRate: 16,
                 frames: this.anims.generateFrameNumbers("werewolf", {start: 0,
                                                                      end: 5}),
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: "wolfLeft",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("werewolf", {start: 6,
+                                                                     end: 11}),
                 repeat: -1
             });
 
@@ -528,6 +557,8 @@
             this.shotCooldown = 0.0;
             this.shotSound = this.sound.add("gunshot");
             this.input.keyboard.on("keydown-SPACE", this.shoot);
+
+            this.bunkerSound = this.sound.add("bunkerDoor");
         },
 
         update: function (time, delta) {
@@ -580,7 +611,7 @@
             
             testPos = new Phaser.Math.Vector2(0, 0);
             testPos.setToPolar(0, 2);
-            let testEnemy = new Enemy(this, "werewolf", "runLeft",
+            let testEnemy = new Enemy(this, "werewolf", "wolfLeft",
                                       "wolfRight", "runAt", testPos);
             gameObjects.add(testEnemy, true);
 
@@ -730,6 +761,10 @@
                 }
             }
             return trees;
+        },
+
+        savedFriendly: function () {
+            this.bunkerSound.play();
         },
 
         shoot: function () {
