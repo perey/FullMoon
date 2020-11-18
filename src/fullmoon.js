@@ -42,6 +42,7 @@
     const HUMAN_HEIGHT = 85;
     const HUMAN_SCALE = 1;
     const HUMAN_HEIGHT_OFFSET = 0.1; // This is proportion, not pixels.
+    const HUMAN_SPAWN_DISTANCE = 16;
     const HUMAN_SAFE_DISTANCE = 0.1;
 
     // How fast people run.
@@ -191,7 +192,7 @@
 
         update: function (time, delta) {
             // Consider which direction to move in.
-            let dir = Math.PI - this.worldPos.angle(); // FIXME
+            let dir = this.worldPos.angle() + Math.PI; // FIXME
 
             // Select the right animation for the given direction.
             let chosenAnim;
@@ -583,55 +584,58 @@
         },
 
         createGameObjects: function () {
-            let gameObjects = this.add.group({active: true, runChildUpdate: true});
+            let background = this.add.group({active: true,
+                                             runChildUpdate: true});
 
             let sky = new Phaser.GameObjects.Image(this, 0, 0, "sky");
             sky.setOrigin(0, 0);
             sky.setDisplaySize(WIDTH, HEIGHT);
-            gameObjects.add(sky, true);
+            background.add(sky, true);
 
             let moon = new Moon(this, "moon",
                                 Phaser.Math.GetSpeed(180, 60 * GAME_DUR));
-            gameObjects.add(moon, true);
+            background.add(moon, true);
 
             let ground = new Phaser.GameObjects.Image(this, 0, HORIZON,
                                                       "ground");
             ground.setOrigin(0, 0);
             ground.setDisplaySize(WIDTH, HEIGHT - HORIZON);
-            gameObjects.add(ground, true);
+            background.add(ground, true);
 
             // Create some random trees.
-            gameObjects.addMultiple(this.placeTrees(), true);
+            background.addMultiple(this.placeTrees(), true);
 
+            this.friendlies = this.add.group({active: true,
+                                              runChildUpdate: true});
+            this.addFriendly();
+
+            this.enemies = this.add.group({active: true,
+                                           runChildUpdate: true});
             let testPos = new Phaser.Math.Vector2(0, 0);
-            testPos.setToPolar(0, 2);
-            let testFriendly = new Friendly(this, "runner", "runLeft",
-                                            "runRight", "runAt", testPos);
-            gameObjects.add(testFriendly, true);
-            
-            testPos = new Phaser.Math.Vector2(0, 0);
             testPos.setToPolar(0, 2);
             let testEnemy = new Enemy(this, "werewolf", "wolfLeft",
                                       "wolfRight", "runAt", testPos);
-            gameObjects.add(testEnemy, true);
+            this.enemies.add(testEnemy, true);
 
             // The bunker's edges.
+            let foreground = this.add.group({active: true,
+                                             runChildUpdate: true});
             let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0,
                                                              HEIGHT - 80,
                                                              WIDTH, 80,
                                                              0x888888);
             lowerEdge.setOrigin(0, 0);
-            gameObjects.add(lowerEdge, true);
+            foreground.add(lowerEdge, true);
 
             this.muzzleFlash = new Phaser.GameObjects.Sprite(this, WIDTH / 2,
                                                              HEIGHT,
                                                              "flashFrames", 3);
             this.muzzleFlash.setOrigin(0.5, 1);
-            gameObjects.add(this.muzzleFlash, true);
+            foreground.add(this.muzzleFlash, true);
             let gun = new Phaser.GameObjects.Image(this, WIDTH / 2, HEIGHT,
                                                    "gun");
             gun.setOrigin(0.5, 1);
-            gameObjects.add(gun, true);
+            foreground.add(gun, true);
         },
 
         placeTrees: function () {
@@ -763,8 +767,20 @@
             return trees;
         },
 
+        addFriendly: function () {
+            let bearing = Phaser.Math.DEG_TO_RAD * Phaser.Math.RND.angle();
+            let pos = new Phaser.Math.Vector2(0, 0);
+            pos.setToPolar(bearing, HUMAN_SPAWN_DISTANCE);
+            let friendly = new Friendly(this, "runner", "runLeft", "runRight",
+                                        "runAt", pos);
+            this.friendlies.add(friendly, true);
+
+            return friendly;
+        },
+
         savedFriendly: function () {
             this.bunkerSound.play();
+            this.addFriendly();
         },
 
         shoot: function () {
