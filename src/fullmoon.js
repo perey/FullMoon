@@ -185,12 +185,16 @@
             this.animAt = animAt;
             this.currentAnim = null;
             this.worldPos = worldPos;
+            this.alive = true;
 
             // Set the original position and size.
             this.updatePosition();
         },
 
         update: function (time, delta) {
+            if (!this.alive) {
+                return;
+            }
             // Consider which direction to move in.
             let dir = this.worldPos.angle() + Math.PI; // FIXME
 
