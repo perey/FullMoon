@@ -61,9 +61,14 @@
 
     // The delay, in milliseconds, between shots.
     const SHOT_DELAY = 400; // 150 shots per minute.
+    
+    // How large, in worldspace units, is the shooting zone? (The wider, the
+    // less precise aiming needs to be.)
+    const KILLZONE_LENGTH = 20;
+    const KILLZONE_WIDTH = 140;
 
     // The game duration, in minutes.
-    const GAME_DUR = 1;
+    const GAME_DUR = 5;
 
     // The possible game states.
     const GAME_STATE = {
@@ -169,8 +174,17 @@
             // Centre all trees on the horizon.
             let y = HORIZON;
             this.setPosition(x, y);
+        },
+
+        shot: function () {
+            // Stupid tree.
+            console.log("You hit a tree.");
         }
     });
+
+    // MOBs.
+    var friendlies;
+    var enemies;
 
     // A friendly. Don't shoot!
     var Friendly = new Phaser.Class({
@@ -239,6 +253,11 @@
             let y = HORIZON;
             this.setPosition(x, y);
             this.setScale(HUMAN_SCALE / this.worldPos.length());
+        },
+
+        shot: function () {
+            // Oops!
+            console.log("You hit a friendly!");
         }
     });
 
@@ -288,6 +307,11 @@
             let y = HORIZON + WOLF_HEIGHT_OFFSET;
             this.setPosition(x, y);
             this.setScale(WOLF_SCALE / this.worldPos.length());
+        },
+
+        shot: function () {
+            // Yay!
+            console.log("You hit an enemy!");
         }
     });
 
@@ -609,17 +633,17 @@
             // Create some random trees.
             background.addMultiple(this.placeTrees(), true);
 
-            this.friendlies = this.add.group({active: true,
-                                              runChildUpdate: true});
+            friendlies = this.add.group({active: true,
+                                         runChildUpdate: true});
             this.addFriendly();
 
-            this.enemies = this.add.group({active: true,
-                                           runChildUpdate: true});
+            enemies = this.add.group({active: true,
+                                      runChildUpdate: true});
             let testPos = new Phaser.Math.Vector2(0, 0);
             testPos.setToPolar(0, 2);
             let testEnemy = new Enemy(this, "werewolf", "wolfLeft",
                                       "wolfRight", "runAt", testPos);
-            this.enemies.add(testEnemy, true);
+            enemies.add(testEnemy, true);
 
             // The bunker's edges.
             let foreground = this.add.group({active: true,
@@ -777,7 +801,7 @@
             pos.setToPolar(bearing, HUMAN_SPAWN_DISTANCE);
             let friendly = new Friendly(this, "runner", "runLeft", "runRight",
                                         "runAt", pos);
-            this.friendlies.add(friendly, true);
+            friendlies.add(friendly, true);
 
             return friendly;
         },
@@ -793,6 +817,61 @@
                 this.scene.shotCooldown = SHOT_DELAY;
 
                 this.scene.muzzleFlash.play("flash");
+
+                // Are there any friendlies, enemies, or trees in the line of
+                // fire?
+                let hitObject = null;
+                let killzone = new Phaser.Geom.Rectangle(-KILLZONE_WIDTH / 2,
+                                                         -KILLZONE_LENGTH,
+                                                         KILLZONE_WIDTH,
+                                                         KILLZONE_LENGTH);
+                let pos = new Phaser.Math.Vector2(0, 0);
+                for (let f = 0; f < friendlies.getLength(); f++) {
+                    let friendly = friendlies.getChildren()[f];
+                    // Get this friendly's position.
+                    pos.copy(friendly.worldPos);
+                    // Rotate it to our frame of reference.
+                    pos.rotate(-player.rot * Phaser.Math.DEG_TO_RAD);
+                    if (killzone.contains(pos.x, pos.y)) {
+                        if (hitObject === null ||
+                            friendly.worldPos.length() <
+                            hitObject.worldPos.length()) {
+                                hitObject = friendly;
+                            }
+                    }
+                }
+                for (let e = 0; e < enemies.getLength(); e++) {
+                    let enemy = enemies.getChildren()[e];
+                    // Get this enemy's position.
+                    pos.copy(enemy.worldPos);
+                    // Rotate it to our frame of reference.
+                    pos.rotate(-player.rot * Phaser.Math.DEG_TO_RAD);
+                    if (killzone.contains(pos.x, pos.y)) {
+                        if (hitObject === null ||
+                            enemy.worldPos.length() <
+                            hitObject.worldPos.length()) {
+                                hitObject = enemy;
+                            }
+                    }
+                }
+                // TODO: Put trees in an iterable, too!
+/*                for (let t = 0; t < trees.getLength(); t++) {
+                    let tree = trees.getChildren()[t];
+                    // Get this tree's position.
+                    pos.copy(tree.worldPos);
+                    // Rotate it to our frame of reference.
+                    pos.rotate(-player.rot * Phaser.Math.DEG_TO_RAD);
+                    if (killzone.contains(pos.x, pos.y)) {
+                        if (hitObject === null ||
+                            tree.worldPos.length() <
+                            hitObject.worldPos.length()) {
+                                hitObject = tree;
+                            }
+                    }
+                }*/
+                if (hitObject !== null) {
+                    hitObject.shot();
+                }
             }
         }
     });

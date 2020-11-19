@@ -37,3 +37,4 @@
 
 * Pad top of wolf frames so its offset works the same as the humans’
 * Tint trees in the distance a lighter grey
+* Stop humans overlapping foreground objects
