@@ -210,12 +210,41 @@
             this.updatePosition();
         },
 
+        pickDirection: function () {
+            // Try and head straight for the bunker.
+            let dir = new Phaser.Math.Vector2();
+            dir.copy(this.worldPos);
+            dir.negate();
+
+            // Try and avoid nearby werewolves.
+            for (let e = 0; e < enemies.getLength(); e++) {
+                let enemy = enemies.getChildren()[e];
+                let runAway = new Phaser.Math.Vector2();
+                runAway.copy(this.worldPos);
+                runAway.subtract(enemy.worldPos);
+
+                // Weight the run-away vector by the distance to the enemy.
+                runAway.normalize();
+                runAway.scale(1 / (this.worldPos.distance(enemy.worldPos)));
+
+                dir.add(runAway);
+            }
+            // Never actually run away from the bunker.
+            if (this.worldPos.angle() - dir.angle() < Math.PI / 2) {
+                return this.worldPos.angle() - 1.05 * Math.PI / 2;
+            } else if (dir.angle() - this.worldPos.angle() < Math.PI / 2) {
+                return this.worldPos.angle() + 1.05 * Math.PI / 2;
+            } else {
+                return dir.angle();
+            }
+        },
+
         update: function (time, delta) {
             if (!this.alive) {
                 return;
             }
             // Consider which direction to move in.
-            let dir = this.worldPos.angle() + Math.PI; // FIXME
+            let dir = this.pickDirection();
 
             // Select the right animation for the given direction.
             let chosenAnim;
@@ -262,13 +291,13 @@
 
         shot: function () {
             // Oops!
-            console.log("You hit a friendly!");
             this.scene.registry.inc("score", -100);
             this.scene.humanDie.play();
             this.die();
         },
         
         die: function () {
+            this.alive = false;
             this.destroy();
             humanDelay = 0;
         }
@@ -371,7 +400,6 @@
 
         shot: function () {
             // Yay!
-            console.log("You hit an enemy!");
             this.scene.registry.inc("score", 10);
             this.health -= 1;
 
@@ -919,7 +947,6 @@
                                   "wolfRight", "wolfAt", pos);
             enemy.setDepth(0);
             enemies.add(enemy, true);
-            console.log("Enemy spawned");
 
             return enemy;
         },
@@ -932,7 +959,6 @@
                                         "runAt", pos);
             friendly.setDepth(0);
             friendlies.add(friendly, true);
-            console.log("Human spawned");
 
             humanDelay = HUMAN_DELAY * 1000;
 
