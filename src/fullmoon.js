@@ -49,6 +49,11 @@
     // FIXME: Why is this not the calculated 208 units per second?
     const HUMAN_SPEED = Phaser.Math.GetSpeed(0.6, 1);
 
+    // How often to spawn a new human (unless there are none left, in which
+    // case one is spawned at once), in seconds.
+    const HUMAN_DELAY = 20;
+    var humanDelay = 0;
+
     // The size, in pixels, of werewolves.
     const WOLF_WIDTH = 162;
     const WOLF_HEIGHT = 125;
@@ -56,8 +61,8 @@
     const WOLF_HEIGHT_OFFSET = 0;
 
     // How fast werewolves run.
-    // FIXME: This is calculated at 742.4 units per second.
-    const WOLF_SPEED = Phaser.Math.GetSpeed(2, 1);
+    // FIXME: Scale to match human speed.
+    const WOLF_SPEED = Phaser.Math.GetSpeed(1.5, 1);
 
     // The delay, in milliseconds, between shots.
     const SHOT_DELAY = 400; // 150 shots per minute.
@@ -284,11 +289,16 @@
             let target = null;
             for (let f = 0; f < friendlies.getLength(); f++) {
                 let maybeTarget = friendlies.getChildren()[f];
-                if (target === null ||
-                    this.worldPos.distance(maybeTarget.worldPos) <
-                    this.worldPos.distance(target.worldPos)) {
-                        target = maybeTarget;
+
+                // Don't target them if they're already too close to the
+                // bunker.
+                if (maybeTarget.worldPos.length() > MIN_TREE_DIST) {
+                    if (target === null ||
+                        this.worldPos.distance(maybeTarget.worldPos) <
+                        this.worldPos.distance(target.worldPos)) {
+                            target = maybeTarget;
                     }
+                }
             }
             if (target === null) {
                 // No friendlies? Just take a default direction.
@@ -650,6 +660,10 @@
                 if (this.shotCooldown > 0) {
                     this.shotCooldown -= delta;
                 }
+                humanDelay -= delta;
+                if (humanDelay <= 0) {
+                    this.addFriendly();
+                }
             }
         },
 
@@ -698,6 +712,11 @@
                                                              0x888888);
             lowerEdge.setOrigin(0, 0);
             foreground.add(lowerEdge, true);
+            let upperEdge = new Phaser.GameObjects.Rectangle(this, 0, 0,
+                                                             WIDTH, 80,
+                                                             0x555555);
+            upperEdge.setOrigin(0, 0);
+            foreground.add(upperEdge, true);
 
             this.muzzleFlash = new Phaser.GameObjects.Sprite(this, WIDTH / 2,
                                                              HEIGHT,
@@ -849,13 +868,18 @@
                                         "runAt", pos);
             friendly.setDepth(0);
             friendlies.add(friendly, true);
+            console.log("Human spawned");
+
+            humanDelay = HUMAN_DELAY * 1000;
 
             return friendly;
         },
 
         savedFriendly: function () {
             this.bunkerSound.play();
-            this.addFriendly();
+            if (friendlies.getLength() < 1) {
+                this.addFriendly();
+            }
         },
 
         shoot: function () {
