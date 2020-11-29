@@ -279,9 +279,32 @@
             this.updatePosition();
         },
 
+        pickDirection: function () {
+            // Find the nearest friendly.
+            let target = null;
+            for (let f = 0; f < friendlies.getLength(); f++) {
+                let maybeTarget = friendlies.getChildren()[f];
+                if (target === null ||
+                    this.worldPos.distance(maybeTarget.worldPos) <
+                    this.worldPos.distance(target.worldPos)) {
+                        target = maybeTarget;
+                    }
+            }
+            if (target === null) {
+                // No friendlies? Just take a default direction.
+                return this.worldPos.angle() + Math.PI / 2;
+            }
+            // Run straight towards them.
+            // FIXME: Avoid running through the bunker!
+            let dir = new Phaser.Math.Vector2();
+            dir.copy(target.worldPos);
+            dir.subtract(this.worldPos);
+            return dir.angle();
+        },
+
         update: function (time, delta) {
             // Consider which direction to move in.
-            let dir = this.worldPos.angle() + Math.PI / 2; // FIXME
+            let dir = this.pickDirection();
 
             // Select the right animation for the given direction.
             let chosenAnim = this.animRight; // FIXME
