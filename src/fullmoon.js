@@ -365,7 +365,10 @@
             if (this.health <= 0) {
                 this.scene.registry.inc("score", 20);
                 this.scene.addEnemy();
+                this.scene.werewolfDead.play();
                 this.destroy();
+            } else {
+                this.scene.werewolfHurt.play();
             }
         }
     });
@@ -498,6 +501,9 @@
             this.load.audio("bunkerDoor", ["./assets/bunker.ogg",
                                            "./assets/bunker.mp3",
                                            "./assets/bunker.m4a"]);
+            this.load.audio("bite", ["./assets/bite.ogg",
+                                     "./assets/bite.mp3",
+                                     "./assets/bite.m4a"]);
             this.load.audio("howl", ["./assets/howl.ogg",
                                      "./assets/howl.mp3",
                                      "./assets/howl.m4a"]);
@@ -654,7 +660,8 @@
             this.input.keyboard.on("keydown-SPACE", this.shoot);
 
             this.bunkerSound = this.sound.add("bunkerDoor");
-            this.werewolfHowl = this.sound.add("howl");
+            this.werewolfHurt = this.sound.add("bite");
+            this.werewolfDead = this.sound.add("howl");
 
             this.registry.set("score", 0);
         },
@@ -883,9 +890,6 @@
         },
 
         addEnemy: function () {
-            if (typeof this.werewolfHowl !== "undefined") {
-                this.werewolfHowl.play();
-            }
             let bearing = Phaser.Math.DEG_TO_RAD * Phaser.Math.RND.angle();
             let pos = new Phaser.Math.Vector2(0, 0);
             pos.setToPolar(bearing, 2);
