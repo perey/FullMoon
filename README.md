@@ -27,6 +27,8 @@ Shotgun sound: [“10 Guage Shotgun” by Mike Koenig](http://soundbible.com/126
 
 Reload sound: [“weapons/shotgun/reload” from Red Eclipse](https://github.com/redeclipse/sounds/tree/3b1f0288623111172b86ea7bf58a77d969b7c920/weapons/shotgun) (CC-BY-SA 3.0)
 
+Scream sound: [The “Wilhelm Scream”](https://archive.org/details/WilhelmScreamSample) (public domain)
+
 Moon graphic: [“Full moon” by dimitri](https://openclipart.org/detail/150367/full-moon) (public domain)
 
 Game Off logo by Lee Reilly
