@@ -66,7 +66,7 @@
 
     // The delay, in milliseconds, between shots.
     const SHOT_DELAY = 400; // 150 shots per minute.
-    
+
     // How large, in worldspace units, is the shooting zone? (The wider, the
     // less precise aiming needs to be.)
     const KILLZONE_LENGTH = 20;
@@ -263,6 +263,7 @@
         shot: function () {
             // Oops!
             console.log("You hit a friendly!");
+            this.scene.registry.inc("score", -100);
         }
     });
 
@@ -282,6 +283,7 @@
 
             // Set the original position and size.
             this.updatePosition();
+            this.health = 3;
         },
 
         pickDirection: function () {
@@ -356,6 +358,15 @@
         shot: function () {
             // Yay!
             console.log("You hit an enemy!");
+            this.scene.registry.inc("score", 10);
+            this.health -= 1;
+
+            // Is it dead?
+            if (this.health <= 0) {
+                this.scene.registry.inc("score", 20);
+                this.scene.addEnemy();
+                this.destroy();
+            }
         }
     });
 
@@ -487,6 +498,9 @@
             this.load.audio("bunkerDoor", ["./assets/bunker.ogg",
                                            "./assets/bunker.mp3",
                                            "./assets/bunker.m4a"]);
+            this.load.audio("howl", ["./assets/howl.ogg",
+                                     "./assets/howl.mp3",
+                                     "./assets/howl.m4a"]);
         },
 
         create: function() {
@@ -640,6 +654,9 @@
             this.input.keyboard.on("keydown-SPACE", this.shoot);
 
             this.bunkerSound = this.sound.add("bunkerDoor");
+            this.werewolfHowl = this.sound.add("howl");
+
+            this.registry.set("score", 0);
         },
 
         update: function (time, delta) {
@@ -697,11 +714,7 @@
 
             enemies = this.add.group({active: true,
                                       runChildUpdate: true});
-            let testPos = new Phaser.Math.Vector2(0, 0);
-            testPos.setToPolar(0, 2);
-            let testEnemy = new Enemy(this, "werewolf", "wolfLeft",
-                                      "wolfRight", "wolfAt", testPos);
-            enemies.add(testEnemy, true);
+            this.addEnemy();
 
             // The bunker's edges.
             let foreground = this.add.group({active: true,
@@ -727,6 +740,15 @@
                                                    "gun");
             gun.setOrigin(0.5, 1);
             foreground.add(gun, true);
+
+            this.scoreText = new Phaser.GameObjects.Text(
+                this, 10, 40, "0", {font: "30px sans-serif",
+                                    fill: "#FFFFFF"});
+            this.scoreText.update = function () {
+                this.text = this.scene.registry.get("score");
+            };
+            this.scoreText.setOrigin(0, 0.5);
+            foreground.add(this.scoreText, true);
 
             foreground.setDepth(50);
         },
@@ -860,6 +882,22 @@
             return trees;
         },
 
+        addEnemy: function () {
+            if (typeof this.werewolfHowl !== "undefined") {
+                this.werewolfHowl.play();
+            }
+            let bearing = Phaser.Math.DEG_TO_RAD * Phaser.Math.RND.angle();
+            let pos = new Phaser.Math.Vector2(0, 0);
+            pos.setToPolar(bearing, 2);
+            let enemy = new Enemy(this, "werewolf", "wolfLeft",
+                                  "wolfRight", "wolfAt", pos);
+            enemy.setDepth(0);
+            enemies.add(enemy, true);
+            console.log("Enemy spawned");
+
+            return enemy;
+        },
+
         addFriendly: function () {
             let bearing = Phaser.Math.DEG_TO_RAD * Phaser.Math.RND.angle();
             let pos = new Phaser.Math.Vector2(0, 0);
@@ -877,6 +915,7 @@
 
         savedFriendly: function () {
             this.bunkerSound.play();
+            this.registry.inc("score", 50);
             if (friendlies.getLength() < 1) {
                 this.addFriendly();
             }
