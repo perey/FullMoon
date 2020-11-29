@@ -41,7 +41,7 @@
     const HUMAN_WIDTH = 75;
     const HUMAN_HEIGHT = 85;
     const HUMAN_SCALE = 1;
-    const HUMAN_HEIGHT_OFFSET = 0.1; // This is proportion, not pixels.
+    const HUMAN_HEIGHT_OFFSET = 0.1;
     const HUMAN_SPAWN_DISTANCE = 16;
     const HUMAN_SAFE_DISTANCE = 0.1;
 
@@ -51,9 +51,9 @@
 
     // The size, in pixels, of werewolves.
     const WOLF_WIDTH = 162;
-    const WOLF_HEIGHT = 75;
+    const WOLF_HEIGHT = 125;
     const WOLF_SCALE = 0.8;
-    const WOLF_HEIGHT_OFFSET = 10; // This is pixels, not proportion.
+    const WOLF_HEIGHT_OFFSET = 0;
 
     // How fast werewolves run.
     // FIXME: This is calculated at 742.4 units per second.
@@ -268,7 +268,7 @@
         initialize: function Enemy(scene, sheet, animLeft, animRight,
                                    animAt, worldPos) {
             Phaser.GameObjects.Sprite.call(this, scene, 0, 0, sheet);
-            this.setOrigin(0.5, 0);
+            this.setOrigin(0.5, WOLF_HEIGHT_OFFSET);
             this.animLeft = animLeft;
             this.animRight = animRight;
             this.animAt = animAt;
@@ -307,7 +307,18 @@
             let dir = this.pickDirection();
 
             // Select the right animation for the given direction.
-            let chosenAnim = this.animRight; // FIXME
+            let chosenAnim;
+            let s = Math.sin(this.worldPos.angle() - dir);
+            if (s ** 2 < 0.5) {
+                // Running towards (or away from) the bunker.
+                chosenAnim = this.animAt;
+            } else if (s > 0) {
+                // Running left (anticlockwise) relative to the bunker.
+                chosenAnim = this.animLeft;
+            } else {
+                // Running right (clockwise) relative to the bunker.
+                chosenAnim = this.animRight;
+            }
             if (this.currentAnim !== chosenAnim) {
                 this.currentAnim = chosenAnim;
                 this.play(chosenAnim);
@@ -326,8 +337,8 @@
             // Convert the visual angle to a horizontal position.
             let x = angleToXPosition(this.worldPos.angle() *
                                      Phaser.Math.RAD_TO_DEG);
-            // Put head height at the horizon.
-            let y = HORIZON + WOLF_HEIGHT_OFFSET;
+            // Put top of frame at the horizon.
+            let y = HORIZON;
             this.setPosition(x, y);
             this.setScale(WOLF_SCALE / this.worldPos.length());
         },
@@ -510,6 +521,14 @@
             });
 
             this.anims.create({
+                key: "wolfAt",
+                frameRate: 16,
+                frames: this.anims.generateFrameNumbers("werewolf", {start: 12,
+                                                                     end: 17}),
+                repeat: -1
+            });
+
+            this.anims.create({
                 key: "flash",
                 frameRate: 20,
                 frames: this.anims.generateFrameNumbers("flashFrames",
@@ -667,7 +686,7 @@
             let testPos = new Phaser.Math.Vector2(0, 0);
             testPos.setToPolar(0, 2);
             let testEnemy = new Enemy(this, "werewolf", "wolfLeft",
-                                      "wolfRight", "runAt", testPos);
+                                      "wolfRight", "wolfAt", testPos);
             enemies.add(testEnemy, true);
 
             // The bunker's edges.
