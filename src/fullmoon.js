@@ -264,6 +264,13 @@
             // Oops!
             console.log("You hit a friendly!");
             this.scene.registry.inc("score", -100);
+            this.scene.humanDie.play();
+            this.die();
+        },
+        
+        die: function () {
+            this.destroy();
+            humanDelay = 0;
         }
     });
 
@@ -291,6 +298,13 @@
             let target = null;
             for (let f = 0; f < friendlies.getLength(); f++) {
                 let maybeTarget = friendlies.getChildren()[f];
+
+                // Have we caught this person already?
+                if (this.worldPos.distance(maybeTarget.worldPos) < 0.1) {
+                    // Yes. Kill them and find a new target.
+                    this.scene.werewolfNom.play();
+                    maybeTarget.die();
+                }
 
                 // Don't target them if they're already too close to the
                 // bunker.
@@ -507,6 +521,12 @@
             this.load.audio("howl", ["./assets/howl.ogg",
                                      "./assets/howl.mp3",
                                      "./assets/howl.m4a"]);
+            this.load.audio("rend", ["./assets/wolfmonster.ogg",
+                                     "./assets/wolfmonster.mp3",
+                                     "./assets/wolfmonster.m4a"]);
+            this.load.audio("scream", ["./assets/scream.ogg",
+                                     "./assets/scream.mp3",
+                                     "./assets/scream.m4a"]);
         },
 
         create: function() {
@@ -662,6 +682,8 @@
             this.bunkerSound = this.sound.add("bunkerDoor");
             this.werewolfHurt = this.sound.add("bite");
             this.werewolfDead = this.sound.add("howl");
+            this.werewolfNom = this.sound.add("rend");
+            this.humanDie = this.sound.add("scream");
 
             this.registry.set("score", 0);
         },
