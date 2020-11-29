@@ -614,6 +614,7 @@
         createGameObjects: function () {
             let background = this.add.group({active: true,
                                              runChildUpdate: true});
+            background.setDepth(-50);
 
             let sky = new Phaser.GameObjects.Image(this, 0, 0, "sky");
             sky.setOrigin(0, 0);
@@ -648,6 +649,7 @@
             // The bunker's edges.
             let foreground = this.add.group({active: true,
                                              runChildUpdate: true});
+            foreground.setDepth(50);
             let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0,
                                                              HEIGHT - 80,
                                                              WIDTH, 80,
