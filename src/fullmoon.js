@@ -614,7 +614,6 @@
         createGameObjects: function () {
             let background = this.add.group({active: true,
                                              runChildUpdate: true});
-            background.setDepth(-50);
 
             let sky = new Phaser.GameObjects.Image(this, 0, 0, "sky");
             sky.setOrigin(0, 0);
@@ -634,6 +633,8 @@
             // Create some random trees.
             background.addMultiple(this.placeTrees(), true);
 
+            background.setDepth(-50);
+
             friendlies = this.add.group({active: true,
                                          runChildUpdate: true});
             this.addFriendly();
@@ -649,7 +650,6 @@
             // The bunker's edges.
             let foreground = this.add.group({active: true,
                                              runChildUpdate: true});
-            foreground.setDepth(50);
             let lowerEdge = new Phaser.GameObjects.Rectangle(this, 0,
                                                              HEIGHT - 80,
                                                              WIDTH, 80,
@@ -666,6 +666,8 @@
                                                    "gun");
             gun.setOrigin(0.5, 1);
             foreground.add(gun, true);
+
+            foreground.setDepth(50);
         },
 
         placeTrees: function () {
@@ -803,6 +805,7 @@
             pos.setToPolar(bearing, HUMAN_SPAWN_DISTANCE);
             let friendly = new Friendly(this, "runner", "runLeft", "runRight",
                                         "runAt", pos);
+            friendly.setDepth(0);
             friendlies.add(friendly, true);
 
             return friendly;
