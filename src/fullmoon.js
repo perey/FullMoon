@@ -73,7 +73,7 @@
     const KILLZONE_WIDTH = 140;
 
     // The game duration, in minutes.
-    const GAME_DUR = 1;
+    const GAME_DUR = 5;
 
     // The possible game states.
     const GAME_STATE = {
