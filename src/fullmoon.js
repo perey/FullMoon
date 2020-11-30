@@ -73,7 +73,7 @@
     const KILLZONE_WIDTH = 140;
 
     // The game duration, in minutes.
-    const GAME_DUR = 5;
+    const GAME_DUR = 1;
 
     // The possible game states.
     const GAME_STATE = {
@@ -137,7 +137,7 @@
         },
 
         update: function (time, delta) {
-            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+            if (gameState !== GAME_STATE.RUNNING) return;
 
             this.elevationAngle += this.angularSpeed * delta;
 
@@ -175,7 +175,7 @@
         },
 
         update: function () {
-            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+            if (gameState !== GAME_STATE.RUNNING) return;
 
             // Convert the visual angle to a horizontal position.
             let x = angleToXPosition(this.worldPos.angle() *
@@ -244,7 +244,7 @@
         },
 
         update: function (time, delta) {
-            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+            if (gameState !== GAME_STATE.RUNNING) return;
 
             if (!this.alive) {
                 return;
@@ -364,7 +364,7 @@
         },
 
         update: function (time, delta) {
-            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+            if (gameState !== GAME_STATE.RUNNING) return;
 
             // Consider which direction to move in.
             let dir = this.pickDirection();
@@ -629,7 +629,7 @@
     var TitleScene = new Phaser.Class({
         Extends: Phaser.Scene,
 
-        initialize: function PreloaderScene() {
+        initialize: function TitleScene() {
             Phaser.Scene.call(this, {
                 key: "TitleScene"
             });
@@ -701,15 +701,15 @@
         },
 
         create: function () {
+            gameState = GAME_STATE.RUNNING;
+            this.gameClock = 0.0;
+
             this.createGameObjects();
 
             this.music = this.sound.add("gameMusic", {loop: true});
             this.music.play();
 
             controls = this.input.keyboard.createCursorKeys();
-
-            gameState = GAME_STATE.RUNNING;
-            this.gameClock = 0.0;
 
             this.shotCooldown = 0.0;
             this.shotSound = this.sound.add("gunshot");
@@ -725,26 +725,34 @@
         },
 
         update: function (time, delta) {
-            if (this.gameClock >= GAME_DUR * 60 * 1000) {
-                // Game over!
-                gameState = GAME_STATE.ENDED;
-                this.music.stop();
-            }
-
             if (gameState === GAME_STATE.RUNNING) {
-                this.gameClock += delta;
+                if (this.gameClock >= GAME_DUR * 60 * 1000) {
+                    // Game over!
+                    gameState = GAME_STATE.ENDED;
+                    this.music.stop();
+                    this.cameras.main.once(
+                        "camerafadeoutcomplete",
+                        function () {
+                            this.scene.start("GameOverScene");
+                        },
+                        this
+                    );
+                    this.cameras.main.fadeOut(500, 0, 0, 0);
+                } else {
+                    this.gameClock += delta;
 
-                if (controls.left.isDown) {
-                    player.turnLeft(delta);
-                } else if (controls.right.isDown) {
-                    player.turnRight(delta);
-                }
-                if (this.shotCooldown > 0) {
-                    this.shotCooldown -= delta;
-                }
-                humanDelay -= delta;
-                if (humanDelay <= 0) {
-                    this.addFriendly();
+                    if (controls.left.isDown) {
+                        player.turnLeft(delta);
+                    } else if (controls.right.isDown) {
+                        player.turnRight(delta);
+                    }
+                    if (this.shotCooldown > 0) {
+                        this.shotCooldown -= delta;
+                    }
+                    humanDelay -= delta;
+                    if (humanDelay <= 0) {
+                        this.addFriendly();
+                    }
                 }
             }
         },
@@ -982,7 +990,7 @@
         },
 
         shoot: function () {
-            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+            if (gameState !== GAME_STATE.RUNNING) return;
 
             if (this.scene.shotCooldown <= 0) {
                 this.scene.shotSound.play();
@@ -1048,13 +1056,58 @@
         }
     });
 
+    var GameOverScene = new Phaser.Class({
+        Extends: Phaser.Scene,
+
+        initialize: function GameOverScene() {
+            Phaser.Scene.call(this, {
+                key: "GameOverScene"
+            });
+        },
+
+        create: function() {
+            let textStyle = {font: "30px sans-serif",
+                             fill: "#FFFFFF"};
+            let line1 = this.add.text(WIDTH / 2, 50, "The moon has set.",
+                                      textStyle);
+            line1.setOrigin(0.5, 0);
+            let line2 = this.add.text(WIDTH / 2, 100, "The night is over.",
+                                      textStyle);
+            line2.setOrigin(0.5, 0);
+            let line3 = this.add.text(WIDTH / 2, 150,
+                                      "Your score: " +
+                                      this.registry.get("score"),
+                                      textStyle);
+            line3.setOrigin(0.5, 0);
+
+            let menuButton = new Button(this, "Menu", WIDTH / 2,
+                                        HEIGHT * 4 / 5, "button",
+                                        this.backToMenu);
+            this.add.existing(menuButton);
+
+            this.cameras.main.once(
+                "camerafadeincomplete",
+                function () {
+                    menuButton.select();
+                    this.input.keyboard.on("keydown-SPACE", this.backToMenu);
+                },
+                this
+            );
+            this.cameras.main.fadeIn(1000, 0, 0, 0);
+        },
+
+        backToMenu: function () {
+            this.scene.scene.start("TitleScene");
+        }
+    });
+
     // Finally, create the game itself.
 
     let config = {
         type: Phaser.AUTO,
         width: WIDTH,
         height: HEIGHT,
-        scene: [PreloaderScene, TitleScene, GameplayScene]
+        scene: [PreloaderScene, TitleScene, GameplayScene, GameOverScene]
     };
 
     var game = new Phaser.Game(config);
