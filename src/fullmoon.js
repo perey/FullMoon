@@ -137,6 +137,8 @@
         },
 
         update: function (time, delta) {
+            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+
             this.elevationAngle += this.angularSpeed * delta;
 
             let direction = 0;
@@ -173,6 +175,8 @@
         },
 
         update: function () {
+            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+
             // Convert the visual angle to a horizontal position.
             let x = angleToXPosition(this.worldPos.angle() *
                                      Phaser.Math.RAD_TO_DEG);
@@ -240,6 +244,8 @@
         },
 
         update: function (time, delta) {
+            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+
             if (!this.alive) {
                 return;
             }
@@ -358,6 +364,8 @@
         },
 
         update: function (time, delta) {
+            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+
             // Consider which direction to move in.
             let dir = this.pickDirection();
 
@@ -974,6 +982,8 @@
         },
 
         shoot: function () {
+            if (this.scene.gameState != GAME_STATE.RUNNING) return;
+
             if (this.scene.shotCooldown <= 0) {
                 this.scene.shotSound.play();
                 this.scene.shotCooldown = SHOT_DELAY;
