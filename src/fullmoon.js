@@ -663,7 +663,7 @@
 
             this.input.keyboard.on("keydown-UP", this.prevButton);
             this.input.keyboard.on("keydown-DOWN", this.nextButton);
-            this.input.keyboard.on("keydown-ENTER", this.activateButton);
+            this.input.keyboard.on("keydown-SPACE", this.activateButton);
         },
 
         activateButton: function () {
